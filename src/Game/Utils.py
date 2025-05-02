@@ -1,5 +1,3 @@
-# Utils.py
-
 import pygame
 
 def message_to_screen(surface, text, size, x, y, color, bckg_color=None, returning=False, alignment="center"):
@@ -14,13 +12,13 @@ def message_to_screen(surface, text, size, x, y, color, bckg_color=None, returni
         y (int): Coordenada Y para posicionamento.
         color (tuple): Cor do texto (R, G, B).
         bckg_color (tuple, optional): Cor de fundo do texto. Default None.
-        returning (bool, optional): Se True, retorna o texto e rect. Default False.
-        alignment (str, optional): Alinhamento: 'center', 'bottomleft', 'bottomright'. Default 'center'.
+        returning (bool, optional): Se True, retorna o texto e o retângulo. Default False.
+        alignment (str, optional): Alinhamento do texto: 'center', 'bottomleft', 'bottomright'. Default 'center'.
 
     Returns:
         dict (optional): {'text': Surface, 'text_rect': Rect} se returning=True.
     """
-    font = pygame.font.Font("freesansbold.ttf", size)  # Pode trocar por outra fonte se quiser
+    font = pygame.font.Font("freesansbold.ttf", size)
     text_surf = font.render(text, True, color, bckg_color)
     text_rect = text_surf.get_rect()
 
@@ -57,7 +55,6 @@ def button(surface, text, text_size, rect, color, active_color):
     border_color = active_color if is_hover else color
     pygame.draw.rect(surface, border_color, rect, 3)
 
-    # Texto sempre com a cor do botão (não do hover)
     message_to_screen(surface, text, text_size, rect.x + rect.w // 2, rect.y + rect.h // 2, color)
 
     if is_hover and pygame.mouse.get_pressed()[0]:
@@ -84,6 +81,19 @@ def draw_cropped_background(screen, background_image):
     screen.blit(cropped_image, (0, 0))
 
 def check_f11(event, fullscreen, window_size, screen):
+    """
+    Alterna entre o modo de tela cheia e o modo janela ao pressionar a tecla F11.
+
+    Parameters:
+        event (pygame.event): Evento do Pygame.
+        fullscreen (bool): Flag indicando se a tela está em modo de tela cheia.
+        window_size (tuple): Tamanho da janela (largura, altura).
+        screen (pygame.Surface): Superfície de tela.
+
+    Returns:
+        fullscreen (bool): Novo estado de fullscreen.
+        screen (pygame.Surface): Superfície de tela atualizada.
+    """
     if event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
         fullscreen = not fullscreen
         if fullscreen:
