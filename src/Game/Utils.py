@@ -1,50 +1,103 @@
 import pygame
 
-# Escreve algo na tela.
-# surface -> superfície onde será escrita
-# text -> texto a ser escrito (str)
-# size -> tamanho do texto (int)
-# x -> posição x do texto
-# y -> posição y do texto
-# color -> tupla contendo valores RGB
-# bckg_color -> tupla contendo a cor de fundo do texto (default None)
-# returning -> diz se a função deve retornar o objeto texto e seu rect ou desenhar direto
-# alignment -> diz a forma de alinhar o texto (center, bottomleft, bottomright) (default center)
 def message_to_screen(surface, text, size, x, y, color, bckg_color=None, returning=False, alignment="center"):
-    font = pygame.font.Font("freesansbold.ttf", size) # Pode mudar pra uma fonte customizada
-    text = font.render(text, True, color, bckg_color)
+    """
+    Renderiza um texto na tela ou retorna o texto e seu retângulo.
 
-    textRect = text.get_rect()
+    Parameters:
+        surface (pygame.Surface): Superfície onde será desenhado o texto.
+        text (str): Texto a ser exibido.
+        size (int): Tamanho da fonte.
+        x (int): Coordenada X para posicionamento.
+        y (int): Coordenada Y para posicionamento.
+        color (tuple): Cor do texto (R, G, B).
+        bckg_color (tuple, optional): Cor de fundo do texto. Default None.
+        returning (bool, optional): Se True, retorna o texto e o retângulo. Default False.
+        alignment (str, optional): Alinhamento do texto: 'center', 'bottomleft', 'bottomright'. Default 'center'.
+
+    Returns:
+        dict (optional): {'text': Surface, 'text_rect': Rect} se returning=True.
+    """
+    font = pygame.font.Font("freesansbold.ttf", size)
+    text_surf = font.render(text, True, color, bckg_color)
+    text_rect = text_surf.get_rect()
 
     if alignment == "center":
-        textRect.center = (x, y)
+        text_rect.center = (x, y)
     elif alignment == "bottomleft":
-        textRect.bottomleft = (x, y)
+        text_rect.bottomleft = (x, y)
     elif alignment == "bottomright":
-        textRect.bottomright = (x, y)
+        text_rect.bottomright = (x, y)
 
     if returning:
-        return {"text": text, "text_rect": textRect}
+        return {"text": text_surf, "text_rect": text_rect}
 
-    surface.blit(text, textRect)
+    surface.blit(text_surf, text_rect)
 
-# Desenha um botão na tela
-# surface -> superfície onde será escrita
-# text -> texto a ser escrito (str)
-# text_size -> tamanho do texto (int)
-# rect -> contém as dimensões do botão (x, y, w, h)
-# color -> cor do botão
-# active_color -> cor do botão ativo (on hover)
 def button(surface, text, text_size, rect, color, active_color):
-    pygame.draw.rect(surface, color, rect, 3)
-    message_to_screen(surface, text, text_size, rect.x + rect.w//2, rect.y + rect.h//2, color)
-    
-    # checking if the mouse is over the button
-    mouse = pygame.mouse.get_pos()
-    if rect.x < mouse[0] < rect.x + rect.w:
-        if rect.y < mouse[1] < rect.y + rect.h:
-            pygame.draw.rect(surface, active_color, rect, 3)
-            if pygame.mouse.get_pressed()[0]:
-                return 1
+    """
+    Desenha um botão e retorna True se clicado.
 
-    return 0
+    Parameters:
+        surface (pygame.Surface): Superfície onde será desenhado o botão.
+        text (str): Texto do botão.
+        text_size (int): Tamanho do texto.
+        rect (pygame.Rect): Retângulo do botão (x, y, w, h).
+        color (tuple): Cor padrão do botão (R, G, B).
+        active_color (tuple): Cor quando o botão está com o mouse sobre.
+
+    Returns:
+        bool: True se o botão for clicado, False caso contrário.
+    """
+    mouse = pygame.mouse.get_pos()
+    is_hover = rect.collidepoint(mouse)
+
+    border_color = active_color if is_hover else color
+    pygame.draw.rect(surface, border_color, rect, 3)
+
+    message_to_screen(surface, text, text_size, rect.x + rect.w // 2, rect.y + rect.h // 2, color)
+
+    if is_hover and pygame.mouse.get_pressed()[0]:
+        return True
+
+    return False
+
+def draw_cropped_background(screen, background_image):
+    """
+    Desenha a parte central da imagem de fundo cortada para caber na janela.
+
+    Parameters:
+        screen (pygame.Surface): Superfície onde desenhar o fundo.
+        background_image (pygame.Surface): Imagem completa de fundo.
+    """
+    screen_width, screen_height = screen.get_size()
+    bg_width, bg_height = background_image.get_size()
+
+    crop_x = max((bg_width - screen_width) // 2, 0)
+    crop_y = max((bg_height - screen_height) // 2, 0)
+
+    crop_rect = pygame.Rect(crop_x, crop_y, screen_width, screen_height)
+    cropped_image = background_image.subsurface(crop_rect)
+    screen.blit(cropped_image, (0, 0))
+
+def check_f11(event, fullscreen, window_size, screen):
+    """
+    Alterna entre o modo de tela cheia e o modo janela ao pressionar a tecla F11.
+
+    Parameters:
+        event (pygame.event): Evento do Pygame.
+        fullscreen (bool): Flag indicando se a tela está em modo de tela cheia.
+        window_size (tuple): Tamanho da janela (largura, altura).
+        screen (pygame.Surface): Superfície de tela.
+
+    Returns:
+        fullscreen (bool): Novo estado de fullscreen.
+        screen (pygame.Surface): Superfície de tela atualizada.
+    """
+    if event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
+        fullscreen = not fullscreen
+        if fullscreen:
+            screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        else:
+            screen = pygame.display.set_mode(window_size)
+    return fullscreen, screen
