@@ -101,3 +101,16 @@ def check_f11(event, fullscreen, window_size, screen):
         else:
             screen = pygame.display.set_mode(window_size)
     return fullscreen, screen
+
+def resize_com_escala(imagem, tela_w, tela_h, proporcao_x, porporcao_y):
+    """
+    Recebe uma imagem e dá resize mantendo as proporções
+    imagem -> objeto imagem que sofrerá o resize
+    tela_w -> largura da tela
+    tela_h -> altura da tela
+    proporcao_x -> % da tela que a imagem deve ocupar em x
+    proporcao_y -> % da tela que a imagem deve ocupar em y
+    """
+    w, h = imagem.get_size()
+    escala = max(tela_w*proporcao_x / w, tela_h*porporcao_y / h)
+    return pygame.transform.scale(imagem, (w*escala, h*escala))
