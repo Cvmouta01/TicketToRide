@@ -18,7 +18,7 @@ BUTTON_ACTIVE_COLOR = (0, 0, 0)
 
 WINDOW_TITLE = "Ticket to Ride"
 
-BACKGROUND_IMAGE_PATH = "assets/settingsBG.jpg"
+BACKGROUND_IMAGE_PATH = "src/Game/assets/settingsBG.jpg"
 
 def save_config_to_json(filename):
     config = {
