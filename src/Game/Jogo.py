@@ -54,6 +54,12 @@ class Jogo():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
+                #Avançar o turno apertando ESPAÇO (provisório)
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        self.jogadores[self.jogador_atual_index].ativo = False
+                        self.jogador_atual_index = (self.jogador_atual_index + 1) % len(self.jogadores)
+                        self.jogadores[self.jogador_atual_index].ativo = True
 
             # Update
             pygame.display.update()

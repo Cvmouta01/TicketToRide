@@ -115,3 +115,10 @@ class Mapa():
         trens_txt = message_to_screen(surface, "T: " + str(jogador.trens), 20, rect[0], rect[1], (0, 0, 0), returning=True)
         t_x, t_y, t_w, t_h = trens_txt["text_rect"]
         surface.blit(trens_txt["text"], (t_x + rect[2] - t_w, t_y + rect[3] - t_h, t_w, t_h))
+        
+        # Se for o turno do jogador, escreve "Vez" centralizado horizontalmente com base no avatar
+        if jogador.ativo:
+            jogando_txt = message_to_screen(surface, "Vez", 12, rect[0], rect[1], (0, 0, 0), returning=True)
+            j_x, j_y, j_w, j_h = jogando_txt["text_rect"]
+            avatar_center_x = rect[0] + self.avatar.get_width() // 2
+            surface.blit(jogando_txt["text"], (avatar_center_x - j_w // 2, rect[1] + self.avatar.get_height() + 2))
