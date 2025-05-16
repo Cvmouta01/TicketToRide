@@ -1,25 +1,25 @@
-city_1,city_2,color,length
-Atlanta,Charleston,grey,2
-Atlanta,Miami,blue,5
-Atlanta,Nashville,grey,1
-Atlanta,New Orleans,yellow,4
-Atlanta,New Orleans,orange,4
-Atlanta,Raleigh,grey,2
-Atlanta,Raleigh,grey,2
-Boston,Montreal,grey,2
-Boston,Montreal,grey,2
-Boston,New York,yellow,2
-Boston,New York,red,2
-Calgary,Helena,grey,4
-Calgary,Seattle,grey,4
-Calgary,Vancouver,grey,3
-Calgary,Winnipeg,white,6
-Charleston,Miami,pink,4
-Charleston,Raleigh,grey,2
-Chicago,Duluth,red,3
-Chicago,Omaha,blue,4
-Chicago,Pittsburgh,orange,3
-Chicago,Pittsburgh,black,3
-Chicago,Saint Louis,green,2
-Chicago,Saint Louis,white,2
-Chicago,Toronto,white,4
+city_1;city_2;color;length;train_pos(x1,y1,x2,y2)
+Atlanta;Charleston;grey;2;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Atlanta;Miami;blue;5;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Atlanta;Nashville;grey;1;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Atlanta;New Orleans;yellow;4;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Atlanta;New Orleans;orange;4;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Atlanta;Raleigh;grey;2;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Atlanta;Raleigh;grey;2;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Boston;Montreal;grey;2;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Boston;Montreal;grey;2;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Boston;New York;yellow;2;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Boston;New York;red;2;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Calgary;Helena;grey;4;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Calgary;Seattle;grey;4;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Calgary;Vancouver;grey;3;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Calgary;Winnipeg;white;6;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Charleston;Miami;pink;4;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Charleston;Raleigh;grey;2;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Chicago;Duluth;red;3;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Chicago;Omaha;blue;4;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Chicago;Pittsburgh;orange;3;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Chicago;Pittsburgh;black;3;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Chicago;Saint Louis;green;2;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Chicago;Saint Louis;white;2;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}
+Chicago;Toronto;white;4;{t1: (5578, 3046, 5788, 3000), t2: (5822, 3066, 6038, 3021)}

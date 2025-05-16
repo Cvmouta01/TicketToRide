@@ -51,7 +51,7 @@ class MapGraph:
             return False
 
 
-    def add_route(self, city1, city2, color, length):
+    def add_route(self, city1, city2, color, length, train_pos):
         """
         Adiciona uma rota entre duas cidades apenas se ambas já existirem no grafo.
         
@@ -60,6 +60,7 @@ class MapGraph:
             city2 (str): Nome da segunda cidade
             color (str): Cor da rota
             length (int): Comprimento da rota
+            train_pos (dict): Dicionário com a posição de cada trilho da rota
         
         Returns:
             bool: True se a rota foi adicionada com sucesso, False caso contrário
@@ -73,7 +74,7 @@ class MapGraph:
             return False
         
         # Se ambas as cidades existem, adiciona a rota
-        self.graph.add_edge(city1, city2, color=color, length=length)
+        self.graph.add_edge(city1, city2, color=color, length=length, train_pos=train_pos)
         print(f"Rota adicionada: {city1} - {city2} (cor: {color}, comprimento: {length})")
         return True
 
@@ -139,17 +140,18 @@ class MapGraph:
                         continue
                     
                     # Divide a linha pelos campos
-                    parts = line.split(',')
-                    if len(parts) >= 4:
+                    parts = line.split(';')
+                    if len(parts) >= 5:
                         city_1 = parts[0].strip()
                         city_2 = parts[1].strip()
                         color = parts[2].strip()
+                        train_pos = parts[4].strip()
                         
                         try:
                             length = int(parts[3].strip())
                             
                             # Adiciona a rota usando o método add_route existente
-                            if self.add_route(city_1, city_2, color, length):
+                            if self.add_route(city_1, city_2, color, length, train_pos):
                                 routes_added += 1
                             else:
                                 routes_failed += 1
@@ -168,7 +170,7 @@ class MapGraph:
             return False
 
 
-    def visualize(self, figsize=(12, 10), node_size=300, font_size=8):
+    def visualize(self, figsize=(70.16, 46.65), node_size=300, font_size=8):
         """
         Visualiza o grafo do jogo Ticket to Ride.
         
@@ -178,7 +180,7 @@ class MapGraph:
             font_size (int): Tamanho da fonte para os nomes das cidades
         """
         # Cria a figura e os eixos com a cor de fundo desejada
-        fig = plt.figure(figsize=figsize, facecolor='#d3d3d3')  # Cinza claro
+        fig = plt.figure(figsize=figsize, dpi=100, facecolor='#d3d3d3')  # Cinza claro
 
         ax = fig.add_subplot(111)
         ax.set_facecolor('#d3d3d3')
