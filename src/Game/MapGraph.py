@@ -78,6 +78,43 @@ class MapGraph:
         return True
 
 
+    def set_route_owned(self, city1, city2, key=0):
+        """
+        Define o status de propriedade de uma rota específica.
+        
+        Args:
+            city1 (str): Nome da primeira cidade
+            city2 (str): Nome da segunda cidade
+            key (int): Identificador da aresta (para múltiplas arestas entre as mesmas cidades)
+            owned (bool): Status de propriedade da rota (True para adquirida, False para não adquirida)
+        
+        Returns:
+            bool: True se a operação foi bem sucedida, False caso contrário
+        """
+        try:
+            # Verifica se a aresta existe
+            if not self.graph.has_edge(city1, city2):
+                print(f"Erro: Não existe rota entre '{city1}' e '{city2}'.")
+                return False
+            
+            # Obtém os dados da aresta
+            edge_data = self.graph.get_edge_data(city1, city2)
+            
+            # Verifica se a chave específica existe
+            if key not in edge_data:
+                print(f"Erro: Não existe rota com chave {key} entre '{city1}' e '{city2}'.")
+                return False
+            
+            # Atualiza o status de propriedade
+            self.graph[city1][city2][key]['owned'] = True
+            status = "adquirida" if True else "não adquirida"
+            print(f"Rota entre '{city1}' e '{city2}' (chave {key}) agora está {status}.")
+            return True
+        except Exception as e:
+            print(f"Erro ao definir propriedade da rota: {e}")
+            return False
+
+
     def load_routes_from_file(self, filename):
         """
         Carrega as rotas a partir de um arquivo CSV.
@@ -171,6 +208,13 @@ class MapGraph:
             edge_width = 5
             edge_length = data.get('length', 1)
             
+            # Verifica se a rota é de propriedade do jogador
+            is_owned = data.get('owned', False)
+
+            # Ajusta a largura ou estilo da linha com base na propriedade
+            if is_owned:
+                edge_width = 8  # Rotas de propriedade são mais grossas
+
             # Cria um par ordenado para identificar a aresta
             edge_pair = tuple(sorted([city1, city2]))
             
@@ -222,5 +266,9 @@ class MapGraph:
 if __name__ == "__main__":
     # Cria uma instância do grafo
     grafo = MapGraph()
+
+    grafo.set_route_owned("Boston", "Montreal", 0)
+    grafo.set_route_owned("Calgary", "Seattle", 0)
+    grafo.set_route_owned("Chicago", "Duluth", 0)
 
     grafo.visualize()
