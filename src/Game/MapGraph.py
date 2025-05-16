@@ -6,6 +6,7 @@ class MapGraph:
         
         self.graph = nx.MultiGraph()
         self.load_cities_from_file('cities.csv')
+        self.load_routes_from_file('routes.csv')
 
 
     def load_cities_from_file(self, filename):
@@ -23,12 +24,12 @@ class MapGraph:
             with open(filename, 'r', encoding='utf-8') as file:
                 next(file)  # Ignora a primeira linha do arquivo, que é o header
                 for line in file:
-                    # Ignoramos linhas em branco
+                    # Ignora linhas em branco
                     line = line.strip()
                     if not line:
                         continue
                     
-                    # Dividimos a linha pelos campos
+                    # Divide a linha pelos campos
                     parts = line.split(',')
                     if len(parts) >= 3:
                         city_name = parts[0].strip()
@@ -36,7 +37,7 @@ class MapGraph:
                             pos_x = float(parts[1].strip())
                             pos_y = float(parts[2].strip())
                             
-                            # Adicionamos a cidade ao grafo
+                            # Adiciona a cidade ao grafo
                             self.graph.add_node(city_name, pos=(pos_x, pos_y))
                             print(f"Cidade adicionada ao grafo: {city_name} ({pos_x}, {pos_y})")
                         except ValueError:
@@ -75,6 +76,59 @@ class MapGraph:
         self.graph.add_edge(city1, city2, color=color, length=length)
         print(f"Rota adicionada: {city1} - {city2} (cor: {color}, comprimento: {length})")
         return True
+
+
+    def load_routes_from_file(self, filename):
+        """
+        Carrega as rotas a partir de um arquivo CSV.
+        O arquivo deve ter o formato: cidade_1,cidade_2,cor,comprimento em cada linha.
+        
+        Args:
+            filename (str): Caminho para o arquivo com as informações das rotas
+            
+        Returns:
+            bool: True se o carregamento foi bem sucedido, False caso contrário
+        """
+        try:
+            with open(filename, 'r', encoding='utf-8') as file:
+                next(file)  # Ignora a primeira linha do arquivo, que é o header
+                routes_added = 0
+                routes_failed = 0
+                
+                for line in file:
+                    # Ignora linhas em branco
+                    line = line.strip()
+                    if not line:
+                        continue
+                    
+                    # Divide a linha pelos campos
+                    parts = line.split(',')
+                    if len(parts) >= 4:
+                        city_1 = parts[0].strip()
+                        city_2 = parts[1].strip()
+                        color = parts[2].strip()
+                        
+                        try:
+                            length = int(parts[3].strip())
+                            
+                            # Adiciona a rota usando o método add_route existente
+                            if self.add_route(city_1, city_2, color, length):
+                                routes_added += 1
+                            else:
+                                routes_failed += 1
+                                
+                        except ValueError:
+                            print(f"Erro ao converter o comprimento da rota entre {city_1} e {city_2}")
+                            routes_failed += 1
+                    else:
+                        print(f"Formato inválido na linha: {line}")
+                        routes_failed += 1
+            
+            print(f"Carregamento de rotas concluído: {routes_added} rotas adicionadas, {routes_failed} falhas.")
+            return True
+        except Exception as e:
+            print(f"Erro ao carregar o arquivo de rotas: {e}")
+            return False
 
 
     def visualize(self, figsize=(12, 10), node_size=300, font_size=8):
@@ -120,7 +174,7 @@ class MapGraph:
             # Cria um par ordenado para identificar a aresta
             edge_pair = tuple(sorted([city1, city2]))
             
-            # Verifica se já processamos este par de cidades
+            # Verifica se já processou este par de cidades
             if edge_pair in processed_pairs:
                 # Esta é a segunda aresta entre estas cidades
                 # Desenha com uma curvatura positiva
@@ -168,12 +222,5 @@ class MapGraph:
 if __name__ == "__main__":
     # Cria uma instância do grafo
     grafo = MapGraph()
-
-    grafo.add_route("Vancouver", "Calgary", "grey", 3)
-    grafo.add_route("Calgary", "Winnipeg", "white", 6)
-    grafo.add_route("Boston", "New York", "yellow", 2)
-    grafo.add_route("Boston", "New York", "red", 2)
-    grafo.add_route("Dallas", "Houston", "grey", 1)
-    grafo.add_route("Dallas", "Houston", "grey", 1)
 
     grafo.visualize()

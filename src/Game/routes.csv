@@ -1,0 +1,25 @@
+city_1,city_2,color,length
+Atlanta,Charleston,grey,2
+Atlanta,Miami,blue,5
+Atlanta,Nashville,grey,1
+Atlanta,New Orleans,yellow,4
+Atlanta,New Orleans,orange,4
+Atlanta,Raleigh,grey,2
+Atlanta,Raleigh,grey,2
+Boston,Montreal,grey,2
+Boston,Montreal,grey,2
+Boston,New York,yellow,2
+Boston,New York,red,2
+Calgary,Helena,grey,4
+Calgary,Seattle,grey,4
+Calgary,Vancouver,grey,3
+Calgary,Winnipeg,white,6
+Charleston,Miami,pink,4
+Charleston,Raleigh,grey,2
+Chicago,Duluth,red,3
+Chicago,Omaha,blue,4
+Chicago,Pittsburgh,orange,3
+Chicago,Pittsburgh,black,3
+Chicago,Saint Louis,green,2
+Chicago,Saint Louis,white,2
+Chicago,Toronto,white,4
