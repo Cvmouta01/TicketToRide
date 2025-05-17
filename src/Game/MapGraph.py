@@ -259,6 +259,41 @@ class MapGraph:
                     verticalalignment='center')
 
 
+            # Verifica se existem as informações de posição dos trilhos
+            train_pos_str = data.get('train_pos', None)
+            if train_pos_str:
+                try:
+                    # Converte a string para um dicionário
+                    train_pos_dict = eval(train_pos_str)
+                    
+                    # Para cada trilho no dicionário
+                    for train_id, positions in train_pos_dict.items():
+                        # Verifica se tem a informação todos os 8 valores (4 pontos)
+                        if len(positions) == 8:
+                            # Verifica se os pontos são válidos (não são todos zeros)
+                            if all(p == 0 for p in positions):
+                                # Se todos os pontos são zeros, pula este trilho
+                                continue
+                            
+                            # Extrai as coordenadas dos 4 pontos
+                            x1, y1, x2, y2, x3, y3, x4, y4 = positions
+                            
+                            # Cria os pontos do retângulo
+                            rectangle_points = [(x1, y1), (x2, y2), (x3, y3), (x4, y4)]
+                            
+                            # Cria um retângulo para o trilho
+                            rectangle = plt.Polygon(rectangle_points, 
+                                                closed=True, 
+                                                fill=True,
+                                                color=edge_color if not is_owned else 'darkgrey',
+                                                alpha=0.7)
+                            
+                            # Adiciona o retângulo ao gráfico
+                            ax.add_patch(rectangle)
+                            
+                except Exception as e:
+                    print(f"Erro ao desenhar trilhos para a rota {city1}-{city2}: {e}")
+
         plt.title("Ticket to Ride")
         plt.axis('off')
         plt.tight_layout()
