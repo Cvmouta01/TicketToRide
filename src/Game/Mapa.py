@@ -34,12 +34,14 @@ class Mapa():
             self.trens.append(trem)
 
         # Mão do jogador, para a demo também (!!!)
+        '''
         self.mão = []
         for c in range(5):
             trem = pygame.image.load(BASE_DIR + "./assets/Images/CartasTrens/" + random.choice(os.listdir(BASE_DIR + "./assets/Images/CartasTrens")))
             trem = pygame.transform.rotate(trem, 90)
             trem = resize_com_escala(trem, width, height, 0.12, 0.12)
             self.mão.append(trem)
+        '''    
         # *************************************************************************************
 
 
@@ -64,20 +66,23 @@ class Mapa():
 
 
         # Desenhando os vagões abertos, só para a demo (!!!) **********************************
+        '''
         trem_x, trem_y = surface.get_width() - self.fundo_vagao.get_width()*0.8, surface.get_height() - 2*self.fundo_vagao.get_height() - 20
         for trem in self.trens:
             surface.blit(trem, (trem_x, trem_y))
 
             trem_y -= trem.get_height() + 10
+        '''
         # Desenhando a mão do jogador ativo, só pra demo (!!!)
         # A ideia é desenhar uma no centro e intercalar entre direita e esquerda
+        '''
         mao_x = surface.get_width()//2 - self.mão[0].get_width() * len(self.mão)//2
         mao_y = surface.get_height() - self.mão[0].get_height()*0.3
         for trem in self.mão:
             surface.blit(trem, (mao_x, mao_y))
 
             mao_x += trem.get_width() + 10
-
+        '''
         # ********************************************************************************
 
 

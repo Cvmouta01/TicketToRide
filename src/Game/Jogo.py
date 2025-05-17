@@ -2,7 +2,7 @@ import random
 import pygame
 from Mapa import Mapa
 from Jogador import Jogador
-from CartaTrem import CartaTrem
+from CartaTrem import *
 from CartaObjetivo import CartaObjetivo
 
 pygame.init()
@@ -20,11 +20,13 @@ class Jogo():
         # Criar baralhos de trem e de objetivos
         self.baralho_trem = CartaTrem.criar_baralho_trem()
         self.baralho_objetivo = CartaObjetivo.criar_baralho_objetivo()
-        
+        self.cartas_compradas_esse_turno = 0
+
         # Embaralhar
         random.shuffle(self.baralho_trem)
         random.shuffle(self.baralho_objetivo)
 
+        self.cartas_laterais = [self.baralho_trem.pop() for _ in range(6)]
         # Criando os objetos jogadores
         self.jogadores = []
         for cor in jogadores:
@@ -49,6 +51,11 @@ class Jogo():
             # Draw
             self.mapa.draw(self.display, self.jogadores) # Desenha os elementos da UI
 
+            # Desenhar a mão do jogador atual
+            jogador_atual = self.jogadores[self.jogador_atual_index]
+            desenhar_mao_jogador(self.display, jogador_atual.cartas)
+            desenhar_cartas_laterais(self.display, self.cartas_laterais)
+
             # Eventos
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -57,9 +64,51 @@ class Jogo():
                 #Avançar o turno apertando ESPAÇO (provisório)
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        self.jogadores[self.jogador_atual_index].ativo = False
+                        jogador_atual.ativo = False
                         self.jogador_atual_index = (self.jogador_atual_index + 1) % len(self.jogadores)
                         self.jogadores[self.jogador_atual_index].ativo = True
+                #Clique com mouse esquerdo
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        mouse_pos = pygame.mouse.get_pos()
+                        clicou_em_compra = False
+
+                        # Verifica clique nas cartas de compra (laterais)
+                        for i, carta in enumerate(self.cartas_laterais):
+                            if carta.rect.collidepoint(mouse_pos):
+                                jogador_atual.cartas.append(carta)
+
+                                # Regra: se carta coringa, turno acaba
+                                if carta.cor == "coringa":
+                                    self.cartas_compradas_esse_turno = 2
+                                else:
+                                    self.cartas_compradas_esse_turno += 1
+
+                                # Substitui carta lateral
+                                self.cartas_laterais[i] = self.baralho_trem.pop() if self.baralho_trem else None
+                                self.cartas_laterais = [c for c in self.cartas_laterais if c is not None]
+                                while len(self.cartas_laterais) < 6 and self.baralho_trem:
+                                    self.cartas_laterais.append(self.baralho_trem.pop())
+
+                                clicou_em_compra = True
+                                break
+
+                        # Só permite seleção se não clicou em compra
+                        if not clicou_em_compra:
+                            for carta in jogador_atual.cartas:
+                                if carta.rect.collidepoint(mouse_pos):
+                                    for c in jogador_atual.cartas:
+                                        c.selecionada = False
+                                    carta.selecionada = True
+                                    break
+
+            # Verifica se deve passar o turno
+            if self.cartas_compradas_esse_turno >= 2:
+                jogador_atual.ativo = False
+                self.jogador_atual_index = (self.jogador_atual_index + 1) % len(self.jogadores)
+                self.jogadores[self.jogador_atual_index].ativo = True
+                self.cartas_compradas_esse_turno = 0
+
 
             # Update
             pygame.display.update()
