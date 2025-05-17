@@ -1,25 +1,25 @@
 city_1;city_2;color;length;train_pos#(xa,ya,xb,yb,xc,yc,xd,yd)
 Atlanta;Charleston;grey;2;{'t1': (5580, 2777, 5575, 2851, 5346, 2838, 5346, 2762), 't2': (5828, 2790, 5822, 2864, 5591, 2851, 5595, 2777)}
-Atlanta;Miami;blue;5;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Atlanta;Nashville;grey;1;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Atlanta;New Orleans;yellow;4;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Atlanta;New Orleans;orange;4;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Atlanta;Raleigh;grey;2;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Atlanta;Raleigh;grey;2;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Boston;Montreal;grey;2;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Boston;Montreal;grey;2;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Boston;New York;yellow;2;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Boston;New York;red;2;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Calgary;Helena;grey;4;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Calgary;Seattle;grey;4;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Calgary;Vancouver;grey;3;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Calgary;Winnipeg;white;6;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Charleston;Miami;pink;4;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Charleston;Raleigh;grey;2;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Chicago;Duluth;red;3;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Chicago;Omaha;blue;4;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Chicago;Pittsburgh;orange;3;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Chicago;Pittsburgh;black;3;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Chicago;Saint Louis;green;2;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Chicago;Saint Louis;white;2;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
-Chicago;Toronto;white;4;{t1: (0, 0, 0, 0, 0, 0, 0, 0), t2: (0, 0, 0, 0, 0, 0, 0, 0)}
+Atlanta;Miami;blue;5;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Atlanta;Nashville;grey;1;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Atlanta;New Orleans;yellow;4;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Atlanta;New Orleans;orange;4;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Atlanta;Raleigh;grey;2;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Atlanta;Raleigh;grey;2;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Boston;Montreal;grey;2;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Boston;Montreal;grey;2;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Boston;New York;yellow;2;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Boston;New York;red;2;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Calgary;Helena;grey;4;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Calgary;Seattle;grey;4;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Calgary;Vancouver;grey;3;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Calgary;Winnipeg;white;6;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Charleston;Miami;pink;4;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Charleston;Raleigh;grey;2;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Chicago;Duluth;red;3;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Chicago;Omaha;blue;4;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Chicago;Pittsburgh;orange;3;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Chicago;Pittsburgh;black;3;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Chicago;Saint Louis;green;2;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Chicago;Saint Louis;white;2;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
+Chicago;Toronto;white;4;{'t1': (0, 0, 0, 0, 0, 0, 0, 0), 't2': (0, 0, 0, 0, 0, 0, 0, 0)}
