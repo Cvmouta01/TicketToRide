@@ -25,6 +25,10 @@ class Jogo():
         random.shuffle(self.baralho_trem)
         random.shuffle(self.baralho_objetivo)
 
+        self.cartas_trem_abertas = []
+        for _ in range(5):
+            self.cartas_trem_abertas.append(self.baralho_trem.pop())
+
         self.jogadores = []
         for cor in jogadores:
             jogador = Jogador(cor)
@@ -40,7 +44,10 @@ class Jogo():
     def game_loop(self):
         while True:
             # draw
-            self.mapa.draw(self.display, self.jogadores)
+            self.mapa.draw(self.display, self.jogadores, self.cartas_trem_abertas)
+
+            # Ideia: onHover de uma rota, o jogador pode clicar para conquistá-la
+            # Se tiver as cartas necessárias, ele conquista a rota e o turno passa pro prox jogador
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

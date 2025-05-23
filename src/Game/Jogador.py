@@ -40,3 +40,9 @@ class Jogador():
                     need -= 1
                     break
         self.pontos += rota.points
+
+    def comprar_cartas_trem(self):
+        pass
+
+    def comprar_cartas_objetivo(self):
+        pass

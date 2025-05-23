@@ -26,29 +26,28 @@ class Mapa():
         self.fundo_destino = resize_com_escala(self.fundo_destino, width, height, 0.12, 0.12)
         self.fundo_destino = pygame.transform.rotate(self.fundo_destino, 90)
 
-        # Carregando alguns trens, só para a demo (!!!) ****************************************
-        self.trens = []
-        for c in range(5):
-            trem = pygame.image.load(BASE_DIR + "./assets/Images/CartasTrens/" + random.choice(os.listdir(BASE_DIR + "./assets/Images/CartasTrens")))
-            trem = resize_com_escala(trem, width, height, 0.12, 0.12)
-            self.trens.append(trem)
+        # Carregando as imagens dos trens, na horizontal e na vertical
+        self.img_cartas_trem_horizontal = {}
+        self.img_cartas_trem_vertical = {}
+        for file in os.listdir(BASE_DIR + "./assets/Images/CartasTrens/"):
+            trem = pygame.image.load(BASE_DIR + "./assets/Images/CartasTrens/" + file)
 
-        # Mão do jogador, para a demo também (!!!)
-        self.mão = []
-        for c in range(5):
-            trem = pygame.image.load(BASE_DIR + "./assets/Images/CartasTrens/" + random.choice(os.listdir(BASE_DIR + "./assets/Images/CartasTrens")))
-            trem = pygame.transform.rotate(trem, 90)
-            trem = resize_com_escala(trem, width, height, 0.12, 0.12)
-            self.mão.append(trem)
-        # *************************************************************************************
+            trem_v = pygame.transform.rotate(trem, 90)
+            trem_v = resize_com_escala(trem_v, width, height, 0.12, 0.12)
 
+            trem_h = resize_com_escala(trem, width, height, 0.12, 0.12)
 
+            card_name = file.split(".")[0]
+
+            self.img_cartas_trem_vertical[card_name] = trem_v
+            self.img_cartas_trem_horizontal[card_name] = trem_h
+        
         self.grafo_cidades = None
 
     # Recebe uma superficie e a lista de jogadores
     # Desenha o mapa e os cards de jogadores com suas respectivas informações
     # Tem que desenhar os baralhos, cartas abertas, mão do jogador ativo e cartas de destino do jogador ativo
-    def draw(self, surface, jogadores):
+    def draw(self, surface, jogadores, cartas_trem_abertas):
         # Preenchendo em um tom bege parecido com o do mapa, pode mudar depois (!!!)
         surface.fill((198, 197, 176))
 
@@ -63,23 +62,25 @@ class Mapa():
         surface.blit(self.fundo_vagao, (surface.get_width() - self.fundo_vagao.get_width()*0.8, surface.get_height() - self.fundo_vagao.get_height() - 10))
 
 
-        # Desenhando os vagões abertos, só para a demo (!!!) **********************************
+        # Desenhando os vagões abertos
         trem_x, trem_y = surface.get_width() - self.fundo_vagao.get_width()*0.8, surface.get_height() - 2*self.fundo_vagao.get_height() - 20
-        for trem in self.trens:
-            surface.blit(trem, (trem_x, trem_y))
+        for trem in cartas_trem_abertas:
+            surface.blit(self.img_cartas_trem_horizontal[trem.cor], (trem_x, trem_y))
 
-            trem_y -= trem.get_height() + 10
-        # Desenhando a mão do jogador ativo, só pra demo (!!!)
+            trem_y -= self.img_cartas_trem_horizontal[trem.cor].get_height() + 10
+
+        # Desenhando a mão do jogador ativo
         # A ideia é desenhar uma no centro e intercalar entre direita e esquerda
-        mao_x = surface.get_width()//2 - self.mão[0].get_width() * len(self.mão)//2
-        mao_y = surface.get_height() - self.mão[0].get_height()*0.3
-        for trem in self.mão:
-            surface.blit(trem, (mao_x, mao_y))
+        for jogador in jogadores:
+            if jogador.ativo:
+                # Usando o vermelho só por conveniencia, poderia ser qqr cor pra calcular width e height
+                mao_x = surface.get_width()//2 - self.img_cartas_trem_vertical["vermelho"].get_width() * len(jogador.cartas)//2
+                mao_y = surface.get_height() - self.img_cartas_trem_vertical["vermelho"].get_height()*0.3
 
-            mao_x += trem.get_width() + 10
+                for trem in jogador.cartas:
+                    surface.blit(self.img_cartas_trem_vertical[trem.cor], (mao_x, mao_y)) # Procura na lista de cartas a carta da cor certa e da blit
 
-        # ********************************************************************************
-
+                    mao_x += self.img_cartas_trem_vertical["vermelho"].get_width() + 10
 
         # Desenhando os cards de jogadores
         cards_x, cards_y = -5, 100
