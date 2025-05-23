@@ -5,8 +5,8 @@ class MapGraph:
     def __init__(self):
         
         self.graph = nx.MultiGraph()
-        self.load_cities_from_file('cities.csv')
-        self.load_routes_from_file('routes.csv')
+        self.load_cities_from_file('src/game/cities.csv')
+        self.load_routes_from_file('src/game/routes.csv')
 
 
     def load_cities_from_file(self, filename):
