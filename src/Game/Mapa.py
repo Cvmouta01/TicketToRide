@@ -12,7 +12,10 @@ class Mapa():
         width, height = surface.get_width(), surface.get_height()
         # Carregando a img de fundo e dando resize
         self.map_img = pygame.image.load(BASE_DIR + "./assets/Images/Mapa/ticket_to_ride_map_sem_borda.png")
+        self.original_width, self.original_height = self.map_img.get_width(), self.map_img.get_height() # Dimensões originais da img
+
         self.map_img = resize_com_escala(self.map_img, width, height, 0.8, 0.8)
+        self.new_width, self.new_height = self.map_img.get_width(), self.map_img.get_height() # Novas dimensões da img
 
         # Carregando a img do avatar dos cards de jogadores e dando resize
         self.avatar = pygame.image.load(BASE_DIR + "./assets/Images/avatar_card.png")
@@ -47,7 +50,7 @@ class Mapa():
     # Recebe uma superficie e a lista de jogadores
     # Desenha o mapa e os cards de jogadores com suas respectivas informações
     # Tem que desenhar os baralhos, cartas abertas, mão do jogador ativo e cartas de destino do jogador ativo
-    def draw(self, surface, jogadores, cartas_trem_abertas):
+    def draw(self, surface, jogadores, cartas_trem_abertas, mouse_info):
         # Preenchendo em um tom bege parecido com o do mapa, pode mudar depois (!!!)
         surface.fill((198, 197, 176))
 
@@ -74,10 +77,21 @@ class Mapa():
         for jogador in jogadores:
             if jogador.ativo:
                 # Usando o vermelho só por conveniencia, poderia ser qqr cor pra calcular width e height
-                mao_x = surface.get_width()//2 - self.img_cartas_trem_vertical["vermelho"].get_width() * len(jogador.cartas)//2
-                mao_y = surface.get_height() - self.img_cartas_trem_vertical["vermelho"].get_height()*0.3
+                card_w, card_h = self.img_cartas_trem_vertical["vermelho"].get_width(), self.img_cartas_trem_vertical["vermelho"].get_height()
+                
+                mao_x = surface.get_width()//2 - card_w * len(jogador.cartas)//2
+                mao_y = surface.get_height() - card_h*0.3
 
                 for trem in jogador.cartas:
+                    # Se o mouse esta em cima da carta e o player clicou
+                    if dentro_poligono(mouse_info[0], [(mao_x, mao_y), (mao_x + card_w, mao_y), (mao_x, mao_y+card_h), (mao_x+card_w, mao_y+card_h)]) and mouse_info[1]:
+                        if trem.selecionada == True: trem.selecionada = False
+                        else: trem.selecionada = True
+
+
+                    if trem.selecionada:
+                        pygame.draw.rect(surface, (255, 255, 255), (mao_x-5, mao_y-5, card_w+10, card_h+10))
+                        
                     surface.blit(self.img_cartas_trem_vertical[trem.cor], (mao_x, mao_y)) # Procura na lista de cartas a carta da cor certa e da blit
 
                     mao_x += self.img_cartas_trem_vertical["vermelho"].get_width() + 10
@@ -123,3 +137,14 @@ class Mapa():
             j_x, j_y, j_w, j_h = jogando_txt["text_rect"]
             avatar_center_x = rect[0] + self.avatar.get_width() // 2
             surface.blit(jogando_txt["text"], (avatar_center_x - j_w // 2, rect[1] + self.avatar.get_height() + 2))
+
+    def ajustar_ponto(self, surface, ponto):
+        # Recebe uma superfície e um ponto
+        # Executa um ajuste de coordenadas pra achar a coordenada certa do ponto visto que o mapa teve resize
+        ponto_ajustado = []
+        for point in ponto:
+            x = point[0] * (self.new_width / self.original_width) + (surface.get_width()//2 - self.new_width//2)
+            y = point[1] * (self.new_height / self.original_height)
+            ponto_ajustado.append((x, y))
+
+        return ponto_ajustado

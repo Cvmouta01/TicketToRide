@@ -1,6 +1,6 @@
 class CartaTrem():
     def __init__(self, cor):
-        
+        self.selecionada = False
         self.cor = cor
 
     @staticmethod

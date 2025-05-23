@@ -114,3 +114,24 @@ def resize_com_escala(imagem, tela_w, tela_h, proporcao_x, porporcao_y):
     w, h = imagem.get_size()
     escala = max(tela_w*proporcao_x / w, tela_h*porporcao_y / h)
     return pygame.transform.scale(imagem, (w*escala, h*escala))
+
+def dentro_poligono(point, polygon):
+    """
+    Recebe um ponto e um polígono
+    Verifica se um ponto está dentro de um polígono
+    """
+    x, y = point
+    inside = False
+    n = len(polygon)
+    px1, py1 = polygon[0]
+    for i in range(n + 1):
+        px2, py2 = polygon[i % n]
+        if y > min(py1, py2):
+            if y <= max(py1, py2):
+                if x <= max(px1, px2):
+                    if py1 != py2:
+                        xinters = (y - py1) * (px2 - px1) / (py2 - py1) + px1
+                    if px1 == px2 or x <= xinters:
+                        inside = not inside
+        px1, py1 = px2, py2
+    return inside

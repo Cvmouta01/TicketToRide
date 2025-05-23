@@ -299,6 +299,21 @@ class MapGraph:
         plt.tight_layout()
         plt.show()
 
+    def update_arestas(self, surface, mapa):
+        # Recebe a superficie e o mapa do jogo
+        # Atualiza as coordenadas das arestas do grafo para as novas coordenadas
+
+        for u, v, k, data in self.graph.edges(data=True, keys=True):
+            # Avalia a string do dicionário
+            posicoes = eval(data['train_pos']) # EVAL (!!!)
+
+            # Aplica a função a cada ponto de cada trem
+            for trem in posicoes:
+                posicoes[trem] = mapa.ajustar_ponto(surface, posicoes[trem])
+
+            # Atualiza no grafo
+            data['train_pos'] = posicoes
+
 
 if __name__ == "__main__":
     # Cria uma instância do grafo
