@@ -7,13 +7,10 @@ from CartaObjetivo import CartaObjetivo
 from MapGraph import MapGraph
 from Utils import *
 
-pygame.init()
-width, height = 1600, 900  # 1600, 900
-
 # Classe que segurará os objetos de jogo
 class Jogo():
     # Jogadores é um array de cores
-    def __init__(self, jogadores):
+    def __init__(self, jogadores, width, height):
         self.display = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Ticket to Ride")
 
@@ -140,11 +137,3 @@ class Jogo():
                         self.map_graph.visualize()
 
             pygame.display.update()
-
-
-num_jogadores = max(2, min(5, 4))
-cores_disponiveis = ["vermelho", "amarelo", "verde", "azul", "preto"]
-cores_escolhidas = random.sample(cores_disponiveis, num_jogadores)
-
-ticket_to_ride = Jogo(cores_escolhidas)
-ticket_to_ride.game_loop()
