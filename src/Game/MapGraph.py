@@ -169,6 +169,21 @@ class MapGraph:
             print(f"Erro ao carregar o arquivo de rotas: {e}")
             return False
 
+    @staticmethod
+    def translate_color(cor_portugues):
+        cores = {
+            "branco": "white",
+            "preto": "black",
+            "vermelho": "red",
+            "azul": "blue",
+            "amarelo": "yellow",
+            "verde": "green",
+            "laranja": "orange",
+            "rosa": "pink",
+            "cinza": "grey"
+        }
+
+        return cores.get(cor_portugues.lower(), "not_valid_color")
 
     def visualize(self, figsize=(70.16, 46.65), node_size=300, font_size=8):
         """
@@ -206,7 +221,7 @@ class MapGraph:
         # Desenha as arestas (rotas) com cores diferentes
         for (city1, city2, key, data) in self.graph.edges(data=True, keys=True):
             # Obtém a cor e o comprimento da aresta
-            edge_color = data.get('color', 'grey')
+            edge_color = self.translate_color(data.get('color', 'grey'))
             edge_width = 5
             edge_length = data.get('length', 1)
             
