@@ -74,7 +74,7 @@ class MapGraph:
             return False
         
         # Se ambas as cidades existem, adiciona a rota
-        self.graph.add_edge(city1, city2, color=color, length=length, train_pos=train_pos)
+        self.graph.add_edge(city1, city2, color=color, length=length, train_pos=train_pos, owned=False)
         print(f"Rota adicionada: {city1} - {city2} (cor: {color}, comprimento: {length})")
         return True
 

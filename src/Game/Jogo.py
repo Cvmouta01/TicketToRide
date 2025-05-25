@@ -90,8 +90,6 @@ class Jogo():
                 for poligono in data['train_pos']:
                     if dentro_poligono(mouse_pos, data['train_pos'][poligono]):
                         if mouse_clicado:
-                            # Por algum motivo nem todas as arestas tem a key "owned" então estou colocando manualmente (!!)
-                            if not "owned" in self.map_graph.graph[u][v][key]: self.map_graph.graph[u][v][key]["owned"] = False
 
                             # Se a aresta não ta "owned"
                             if not self.map_graph.graph[u][v][key]["owned"]:
