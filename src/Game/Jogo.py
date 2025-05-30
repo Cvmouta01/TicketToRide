@@ -88,32 +88,38 @@ class Jogo():
             # Passando por todos as arestas do grafo e definindo os poligonos na interface
             for u, v, key, data in self.map_graph.graph.edges(keys=True, data=True):
                 for poligono in data['train_pos']:
-                    if dentro_poligono(mouse_pos, data['train_pos'][poligono]):
-                        if mouse_clicado:
-
-                            # Se a aresta não ta "owned"
-                            if not self.map_graph.graph[u][v][key]["owned"]:
-                                # Se o player pode conquistar a rota
-                                if self.jogadores[self.jogador_atual_index].pode_conquistar(data):
-                                    # Conquista de fato a rota
-                                    self.jogadores[self.jogador_atual_index].conquistar_rota(data)
-
-                                    # Seta a rota como owned
-                                    self.map_graph.graph[u][v][key]['owned'] = True
-
-                                    print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
-
-                                    # Conquistou uma rota, é uma das ações possíveis do turno
-                                    # Então finaliza o turno
-                                    self.passar_turno()
-                                else:
-                                    print(f"Não foram selecionadas cartas que sejam suficientes para conquistar a rota {u}-{v}")
-                            else:
-                                print(f"A rota {u}-{v} já está conquistada!")
-
-                        pygame.draw.polygon(self.display, (255, 0, 0), data['train_pos'][poligono], 5) # pode remover dps
+                    if self.map_graph.graph[u][v][key]['owned']:
+                        pygame.draw.polygon(self.display, (0, 0, 0), data['train_pos'][poligono], 2)
                     else:
-                        pygame.draw.polygon(self.display, (0, 255, 0), data['train_pos'][poligono], 5) # pode remover dps
+                        if dentro_poligono(mouse_pos, data['train_pos'][poligono]):
+                            if mouse_clicado:
+
+                                # Se a aresta não ta "owned"
+                                if not self.map_graph.graph[u][v][key]["owned"]:
+                                    # Se o player pode conquistar a rota
+                                    if self.jogadores[self.jogador_atual_index].pode_conquistar(data):
+                                        # Conquista de fato a rota
+                                        self.jogadores[self.jogador_atual_index].conquistar_rota(data)
+
+                                        # Seta a rota como owned
+                                        self.map_graph.graph[u][v][key]['owned'] = True
+
+                                        # Avisa o mapa que tem que pintar o trilho com a cor do jogador
+                                        self.mapa.atualizar_trens(data['train_pos'], self.jogadores[self.jogador_atual_index].cor)
+
+                                        print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
+
+                                        # Conquistou uma rota, é uma das ações possíveis do turno
+                                        # Então finaliza o turno
+                                        self.passar_turno()
+                                    else:
+                                        print(f"Não foram selecionadas cartas que sejam suficientes para conquistar a rota {u}-{v}")
+                                else:
+                                    print(f"A rota {u}-{v} já está conquistada!")
+
+                            pygame.draw.polygon(self.display, (255, 0, 0), data['train_pos'][poligono], 2) # pode remover dps
+                        else:
+                            pygame.draw.polygon(self.display, (0, 255, 0), data['train_pos'][poligono], 2) # pode remover dps
 
             # EVENTOS ================================================================
             mouse_clicado = False

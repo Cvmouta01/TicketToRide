@@ -47,6 +47,10 @@ class Mapa():
         
         self.grafo_cidades = None
 
+        # Lista pra armazenar os trilhos conquistados e suas cores
+        # Da forma [[(), (), (), (), cor], [(), (), (), (), cor]]
+        self.trilhos_conquistados = []
+
     # Recebe uma superficie e a lista de jogadores
     # Desenha o mapa e os cards de jogadores com suas respectivas informações
     # Tem que desenhar os baralhos, cartas abertas, mão do jogador ativo e cartas de destino do jogador ativo
@@ -56,6 +60,11 @@ class Mapa():
 
         # O mapa se desenha no centro da tela colando na parte de cima
         surface.blit(self.map_img, (surface.get_width()//2 - self.map_img.get_width()//2, 0))
+
+
+        # Desenhando os trilhos pitandos (conquistados)
+        for track in self.trilhos_conquistados:
+            pygame.draw.polygon(surface, cores[track[4]], track[:4])
 
 
         # Desenhando os baralhos de vagão e destino
@@ -148,3 +157,10 @@ class Mapa():
             ponto_ajustado.append((x, y))
 
         return ponto_ajustado
+    
+    def atualizar_trens(self, trilhos, cor):
+        for track_id in trilhos:
+            track_info = trilhos[track_id].copy()
+            track_info.append(cor)
+
+            self.trilhos_conquistados.append(track_info)
