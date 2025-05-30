@@ -74,6 +74,9 @@ class Jogador():
             case _:
                 self.pontos += 15
 
+        # Removendo a qtd de trens usadas pra conquistar a rota
+        self.trens -= rota["length"]
+
     def comprar_cartas_trem(self):
         pass
 

@@ -101,6 +101,8 @@ class Jogo():
                                     # Seta a rota como owned
                                     self.map_graph.graph[u][v][key]['owned'] = True
 
+                                    print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
+
                                     # Conquistou uma rota, é uma das ações possíveis do turno
                                     # Então finaliza o turno
                                     self.passar_turno()

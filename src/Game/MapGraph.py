@@ -1,12 +1,14 @@
 import networkx as nx
 import matplotlib.pyplot as plt
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 class MapGraph:
     def __init__(self):
-        
         self.graph = nx.MultiGraph()
-        self.load_cities_from_file('cities.csv')
-        self.load_routes_from_file('routes.csv')
+        self.load_cities_from_file(BASE_DIR  + '/cities.csv')
+        self.load_routes_from_file(BASE_DIR + '/routes.csv')
 
 
     def load_cities_from_file(self, filename):
