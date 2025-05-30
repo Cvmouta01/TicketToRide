@@ -5,8 +5,8 @@ class MapGraph:
     def __init__(self):
         
         self.graph = nx.MultiGraph()
-        self.load_cities_from_file('src/game/cities.csv')
-        self.load_routes_from_file('src/game/routes.csv')
+        self.load_cities_from_file('cities.csv')
+        self.load_routes_from_file('routes.csv')
 
 
     def load_cities_from_file(self, filename):
@@ -183,7 +183,7 @@ class MapGraph:
             "cinza": "grey"
         }
 
-        return cores.get(cor_portugues.lower(), "not_valid_color")
+        return cores.get(cor_portugues.lower(), cor_portugues)
 
     def visualize(self, figsize=(70.16, 46.65), node_size=300, font_size=8):
         """
@@ -333,9 +333,5 @@ class MapGraph:
 if __name__ == "__main__":
     # Cria uma instância do grafo
     grafo = MapGraph()
-
-    grafo.set_route_owned("Boston", "Montreal", 0)
-    grafo.set_route_owned("Calgary", "Seattle", 0)
-    grafo.set_route_owned("Chicago", "Duluth", 0)
 
     grafo.visualize()
