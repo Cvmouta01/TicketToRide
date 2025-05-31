@@ -46,71 +46,161 @@ class Mapa():
             self.img_cartas_trem_horizontal[card_name] = trem_h
         
         self.grafo_cidades = None
-
-        # Lista pra armazenar os trilhos conquistados e suas cores
-        # Da forma [[(), (), (), (), cor], [(), (), (), (), cor]]
         self.trilhos_conquistados = []
-
     # Recebe uma superficie e a lista de jogadores
     # Desenha o mapa e os cards de jogadores com suas respectivas informações
     # Tem que desenhar os baralhos, cartas abertas, mão do jogador ativo e cartas de destino do jogador ativo
-    def draw(self, surface, jogadores, cartas_trem_abertas, mouse_info):
-        # Preenchendo em um tom bege parecido com o do mapa, pode mudar depois (!!!)
-        surface.fill((198, 197, 176))
+    def desenhar_mao_jogador(self, surface, mao_jogador, mouse_info):
+        if not mao_jogador:
+            return
 
-        # O mapa se desenha no centro da tela colando na parte de cima
+        # Contar cartas por cor e guardar a primeira carta de cada cor
+        contagem_cores = {}
+        primeira_carta_por_cor = {}
+        for carta in mao_jogador:
+            cor = carta.cor
+            contagem_cores[cor] = contagem_cores.get(cor, 0) + 1
+            if cor not in primeira_carta_por_cor:
+                primeira_carta_por_cor[cor] = carta
+
+        cores_unicas = list(contagem_cores.keys())
+
+        carta_base = self.img_cartas_trem_horizontal.get(cores_unicas[0])
+        if not carta_base:
+            return
+
+        largura_original = carta_base.get_width()
+        altura_original = carta_base.get_height()
+        escala = 1
+        largura_red = int(largura_original * escala)
+        altura_red = int(altura_original * escala)
+
+        espacamento = altura_red + 10  # cartas rotacionadas: altura será a nova largura
+        largura_total = len(cores_unicas) * espacamento - 10
+        x_inicial = (surface.get_width() - largura_total) // 2
+        y_inicial = surface.get_height() - (largura_red / 2)
+
+        fonte = pygame.font.SysFont(None, 24)
+
+        for i, cor in enumerate(cores_unicas):
+            imagem = self.img_cartas_trem_horizontal.get(cor)
+            if not imagem:
+                continue
+
+            imagem_red = pygame.transform.smoothscale(imagem, (largura_red, altura_red))
+            imagem_rot = pygame.transform.rotate(imagem_red, -90)
+
+            x = x_inicial + i * espacamento
+            y = y_inicial
+
+            surface.blit(imagem_rot, (x, y))
+
+            rect = pygame.Rect(x, y, altura_red, largura_red)  # largura e altura invertidos
+            primeira_carta = primeira_carta_por_cor[cor]
+            primeira_carta.rect = rect
+
+            # Checar se alguma carta dessa cor foi clicada
+            if dentro_poligono(mouse_info[0], [rect.topleft,
+                                   (rect.right, rect.top),
+                                   (rect.left, rect.bottom),
+                                   (rect.right, rect.bottom)]) and mouse_info[1]:
+                nova_selecao = not primeira_carta_por_cor[cor].selecionada
+
+                for carta in mao_jogador:
+                    if carta.cor == cor or carta.cor == "coringa":
+                        carta.selecionada = nova_selecao
+
+
+            # Se qualquer carta dessa cor estiver selecionada, desenha borda
+            if any(carta.selecionada for carta in mao_jogador if carta.cor == cor):
+                pygame.draw.rect(surface, (255, 255, 0), rect, 3)
+
+            # Mostrar quantidade de cartas se for mais de 1
+            qtd = contagem_cores[cor]
+            if qtd > 1:
+                texto = fonte.render(str(qtd), True, (255, 255, 0))
+                texto_rect = texto.get_rect(center=(rect.centerx, rect.top + 10))
+                surface.blit(texto, texto_rect)
+
+
+
+
+    def desenhar_cartas_laterais(self, surface, cartas_laterais, mouse_info):
+        carta_base = self.img_cartas_trem_horizontal.get(cartas_laterais[0].cor)
+        if not carta_base:
+            return
+
+        largura_carta = carta_base.get_width()
+        altura_carta = carta_base.get_height()
+
+        x_inicial = surface.get_width() - largura_carta*0.8
+        y_inicial = 90
+        espacamento = 5
+        escala = 0.9
+
+        # Obtém a imagem de uma carta pela cor da primeira carta
+        primeira_carta = cartas_laterais[0]
+        imagem_base = self.img_cartas_trem_horizontal.get(primeira_carta.cor)
+        if not imagem_base:
+            return  # não tem imagem para essa cor
+
+        largura_original = imagem_base.get_width()
+        altura_original = imagem_base.get_height()
+        largura_red = int(largura_original * escala)
+        altura_red = int(altura_original * escala)
+
+        for i, carta in enumerate(cartas_laterais):
+            imagem = self.img_cartas_trem_horizontal.get(carta.cor)
+            if imagem is None:
+                continue
+
+            imagem_red = pygame.transform.smoothscale(imagem, (largura_red, altura_red))
+            x = x_inicial
+            y = y_inicial + i * (altura_red + espacamento)
+
+            surface.blit(imagem_red, (x, y))
+            rect = pygame.Rect(x, y, largura_red, altura_red)
+            carta.rect = rect
+
+            if dentro_poligono(mouse_info[0], [rect.topleft,
+                                            (rect.right, rect.top),
+                                            (rect.left, rect.bottom),
+                                            (rect.right, rect.bottom)]) and mouse_info[1]:
+                carta.selecionada = not carta.selecionada
+
+            if carta.selecionada:
+                pygame.draw.rect(surface, (255, 255, 0), rect, 3)
+
+
+    def draw(self, surface, jogadores, cartas_trem_abertas, mouse_info):
+        surface.fill((198, 197, 176))
         surface.blit(self.map_img, (surface.get_width()//2 - self.map_img.get_width()//2, 0))
 
-
+        # Desenha baralhos destino e vagão (igual antes)
+        surface.blit(self.fundo_destino, (surface.get_width() - self.fundo_destino.get_width() - 10, 0 - self.fundo_destino.get_height()//2))
+        surface.blit(self.fundo_vagao, (surface.get_width() - self.fundo_vagao.get_width()*0.8, surface.get_height() - self.fundo_vagao.get_height() - 10))
         # Desenhando os trilhos pitandos (conquistados)
         for track in self.trilhos_conquistados:
             pygame.draw.polygon(surface, cores[track[4]], track[:4])
+        self.rect_baralho_vagao = pygame.Rect(
+            surface.get_width() - self.fundo_vagao.get_width()*0.8,
+            surface.get_height() - self.fundo_vagao.get_height() - 10,
+            self.fundo_vagao.get_width()*0.8,
+            self.fundo_vagao.get_height()
+        )
+        # Desenha cartas abertas na lateral
+        self.desenhar_cartas_laterais(surface, cartas_trem_abertas, mouse_info)
 
-
-        # Desenhando os baralhos de vagão e destino
-        # O destino vai no canto superior direito, metade pra fora da tela
-        surface.blit(self.fundo_destino, (surface.get_width() - self.fundo_destino.get_width() - 10, 0 - self.fundo_destino.get_height()//2))
-        # O vagão vai no canto inferior direito, 20% pra fora da tela
-        surface.blit(self.fundo_vagao, (surface.get_width() - self.fundo_vagao.get_width()*0.8, surface.get_height() - self.fundo_vagao.get_height() - 10))
-
-
-        # Desenhando os vagões abertos
-        trem_x, trem_y = surface.get_width() - self.fundo_vagao.get_width()*0.8, surface.get_height() - 2*self.fundo_vagao.get_height() - 20
-        for trem in cartas_trem_abertas:
-            surface.blit(self.img_cartas_trem_horizontal[trem.cor], (trem_x, trem_y))
-
-            trem_y -= self.img_cartas_trem_horizontal[trem.cor].get_height() + 10
-
-        # Desenhando a mão do jogador ativo
-        # A ideia é desenhar uma no centro e intercalar entre direita e esquerda
+        # Desenha mão do jogador ativo
         for jogador in jogadores:
             if jogador.ativo:
-                # Usando o vermelho só por conveniencia, poderia ser qqr cor pra calcular width e height
-                card_w, card_h = self.img_cartas_trem_vertical["vermelho"].get_width(), self.img_cartas_trem_vertical["vermelho"].get_height()
-                
-                mao_x = surface.get_width()//2 - card_w * len(jogador.cartas)//2
-                mao_y = surface.get_height() - card_h*0.3
+                self.desenhar_mao_jogador(surface, jogador.cartas, mouse_info)
 
-                for trem in jogador.cartas:
-                    # Se o mouse esta em cima da carta e o player clicou
-                    if dentro_poligono(mouse_info[0], [(mao_x, mao_y), (mao_x + card_w, mao_y), (mao_x, mao_y+card_h), (mao_x+card_w, mao_y+card_h)]) and mouse_info[1]:
-                        if trem.selecionada == True: trem.selecionada = False
-                        else: trem.selecionada = True
-
-
-                    if trem.selecionada:
-                        pygame.draw.rect(surface, (255, 255, 255), (mao_x-5, mao_y-5, card_w+10, card_h+10))
-                        
-                    surface.blit(self.img_cartas_trem_vertical[trem.cor], (mao_x, mao_y)) # Procura na lista de cartas a carta da cor certa e da blit
-
-                    mao_x += self.img_cartas_trem_vertical["vermelho"].get_width() + 10
-
-        # Desenhando os cards de jogadores
+        # Desenha cards dos jogadores (igual antes)
         cards_x, cards_y = -5, 100
-        cards_w, cards_h = surface.get_width()/10, surface.get_height()/9 # Tamanho do card é equivalente a 1/10 do width e 1/9 do height da tela
+        cards_w, cards_h = surface.get_width()/10, surface.get_height()/9
         for jogador in jogadores:
             self.criar_card_jogador(surface, jogador, (cards_x, cards_y, cards_w, cards_h))
-
             cards_y += cards_h + 20
 
     # Retorna um card de jogador, contendo um fundo, um avatar na cor correta
@@ -158,9 +248,9 @@ class Mapa():
 
         return ponto_ajustado
     
+     
     def atualizar_trens(self, trilhos, cor):
         for track_id in trilhos:
             track_info = trilhos[track_id].copy()
             track_info.append(cor)
-
             self.trilhos_conquistados.append(track_info)
