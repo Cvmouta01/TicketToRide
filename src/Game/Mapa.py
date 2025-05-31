@@ -29,25 +29,22 @@ class Mapa():
         self.fundo_destino = resize_com_escala(self.fundo_destino, width, height, 0.12, 0.12)
         self.fundo_destino = pygame.transform.rotate(self.fundo_destino, 90)
 
-        # Carregando alguns trens, só para a demo (!!!) ****************************************
-        self.trens = []
-        for c in range(5):
-            trem = pygame.image.load(BASE_DIR + "./assets/Images/CartasTrens/" + random.choice(os.listdir(BASE_DIR + "./assets/Images/CartasTrens")))
-            trem = resize_com_escala(trem, width, height, 0.12, 0.12)
-            self.trens.append(trem)
+        # Carregando as imagens dos trens, na horizontal e na vertical
+        self.img_cartas_trem_horizontal = {}
+        self.img_cartas_trem_vertical = {}
+        for file in os.listdir(BASE_DIR + "./assets/Images/CartasTrens/"):
+            trem = pygame.image.load(BASE_DIR + "./assets/Images/CartasTrens/" + file)
 
-        # Mão do jogador, para a demo também (!!!)
-        '''
-        self.mão = []
-        for c in range(5):
-            trem = pygame.image.load(BASE_DIR + "./assets/Images/CartasTrens/" + random.choice(os.listdir(BASE_DIR + "./assets/Images/CartasTrens")))
-            trem = pygame.transform.rotate(trem, 90)
-            trem = resize_com_escala(trem, width, height, 0.12, 0.12)
-            self.mão.append(trem)
-        '''    
-        # *************************************************************************************
+            trem_v = pygame.transform.rotate(trem, 90)
+            trem_v = resize_com_escala(trem_v, width, height, 0.12, 0.12)
 
+            trem_h = resize_com_escala(trem, width, height, 0.12, 0.12)
 
+            card_name = file.split(".")[0]
+
+            self.img_cartas_trem_vertical[card_name] = trem_v
+            self.img_cartas_trem_horizontal[card_name] = trem_h
+        
         self.grafo_cidades = None
         self.trilhos_conquistados = []
     # Recebe uma superficie e a lista de jogadores
@@ -182,30 +179,24 @@ class Mapa():
         # Desenha baralhos destino e vagão (igual antes)
         surface.blit(self.fundo_destino, (surface.get_width() - self.fundo_destino.get_width() - 10, 0 - self.fundo_destino.get_height()//2))
         surface.blit(self.fundo_vagao, (surface.get_width() - self.fundo_vagao.get_width()*0.8, surface.get_height() - self.fundo_vagao.get_height() - 10))
+        # Desenhando os trilhos pitandos (conquistados)
+        for track in self.trilhos_conquistados:
+            pygame.draw.polygon(surface, cores[track[4]], track[:4])
+        self.rect_baralho_vagao = pygame.Rect(
+            surface.get_width() - self.fundo_vagao.get_width()*0.8,
+            surface.get_height() - self.fundo_vagao.get_height() - 10,
+            self.fundo_vagao.get_width()*0.8,
+            self.fundo_vagao.get_height()
+        )
+        # Desenha cartas abertas na lateral
+        self.desenhar_cartas_laterais(surface, cartas_trem_abertas, mouse_info)
 
+        # Desenha mão do jogador ativo
+        for jogador in jogadores:
+            if jogador.ativo:
+                self.desenhar_mao_jogador(surface, jogador.cartas, mouse_info)
 
-        # Desenhando os vagões abertos, só para a demo (!!!) **********************************
-        '''
-        trem_x, trem_y = surface.get_width() - self.fundo_vagao.get_width()*0.8, surface.get_height() - 2*self.fundo_vagao.get_height() - 20
-        for trem in self.trens:
-            surface.blit(trem, (trem_x, trem_y))
-
-            trem_y -= trem.get_height() + 10
-        '''
-        # Desenhando a mão do jogador ativo, só pra demo (!!!)
-        # A ideia é desenhar uma no centro e intercalar entre direita e esquerda
-        '''
-        mao_x = surface.get_width()//2 - self.mão[0].get_width() * len(self.mão)//2
-        mao_y = surface.get_height() - self.mão[0].get_height()*0.3
-        for trem in self.mão:
-            surface.blit(trem, (mao_x, mao_y))
-
-            mao_x += trem.get_width() + 10
-        '''
-        # ********************************************************************************
-
-
-        # Desenhando os cards de jogadores
+        # Desenha cards dos jogadores (igual antes)
         cards_x, cards_y = -5, 100
         cards_w, cards_h = surface.get_width()/10, surface.get_height()/9
         for jogador in jogadores:

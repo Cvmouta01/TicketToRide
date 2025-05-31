@@ -2,7 +2,7 @@ import random
 import pygame
 from Mapa import Mapa
 from Jogador import Jogador
-from CartaTrem import *
+from CartaTrem import CartaTrem
 from CartaObjetivo import CartaObjetivo
 from MapGraph import MapGraph
 from Utils import *
@@ -21,9 +21,6 @@ class Jogo():
 
         self.baralho_trem = CartaTrem.criar_baralho_trem()
         self.baralho_objetivo = CartaObjetivo.criar_baralho_objetivo()
-        self.cartas_compradas_esse_turno = 0
-
-        # Embaralhar
         random.shuffle(self.baralho_trem)
         random.shuffle(self.baralho_objetivo)
         self.cartas_compradas_esse_turno = 0
@@ -32,8 +29,6 @@ class Jogo():
         for _ in range(5):
             self.cartas_trem_abertas.append(self.baralho_trem.pop())
 
-        self.cartas_laterais = [self.baralho_trem.pop() for _ in range(6)]
-        # Criando os objetos jogadores
         self.jogadores = []
         for cor in jogadores:
             jogador = Jogador(cor)
@@ -71,15 +66,118 @@ class Jogo():
         # Definindo pois pygame.mouse.get_pressed() retorna vários cliques por conta do loop
         mouse_clicado = False
         while True:
-            # Draw
-            self.mapa.draw(self.display, self.jogadores) # Desenha os elementos da UI
+            mouse_pos = pygame.mouse.get_pos()
 
-            # Desenhar a mão do jogador atual
-            jogador_atual = self.jogadores[self.jogador_atual_index]
-            desenhar_mao_jogador(self.display, jogador_atual.cartas)
-            desenhar_cartas_laterais(self.display, self.cartas_laterais)
+            # Draw ==================================================================
 
-            # Eventos
+            # Passa pro desenho do mapa o display, os jogadores, as cartas abertas e informações sobre o mouse
+            self.mapa.draw(self.display, self.jogadores, self.cartas_trem_abertas, [mouse_pos, mouse_clicado])
+
+            # CONQUISTANDO ROTAS =====================================================
+
+            # Ideia:
+            # Jogador seleciona uma qtd de cartas na sua mão, elas ficam com uma borda
+            # Jogador pode remover a seleção clicando novamente
+
+            # Após selecionar as cartas, jogador pode clicar numa rota
+            # Se ele selecionou as cartas necessárias, ele conquista a rota e o turno passa pro prox jogador
+
+            # => SELECIONANDO CARTAS
+            # A seleção das cartas já está implementado dentro de Mapa.py
+
+            # => SELECIONANDO UMA ROTA
+            # => SELECIONANDO UMA ROTA
+            # Passando por todos as arestas do grafo e definindo os poligonos na interface
+            for u, v, key, data in self.map_graph.graph.edges(keys=True, data=True):
+                for poligono in data['train_pos']:
+                    if self.map_graph.graph[u][v][key]['owned']:
+                        pygame.draw.polygon(self.display, (0, 0, 0), data['train_pos'][poligono], 2)
+                    else:
+                        if dentro_poligono(mouse_pos, data['train_pos'][poligono]):
+                            if mouse_clicado:
+
+                                # Se a aresta não ta "owned"
+                                if not self.map_graph.graph[u][v][key]["owned"]:
+                                    # Se o player pode conquistar a rota
+                                    if self.jogadores[self.jogador_atual_index].pode_conquistar(data):
+                                        # Conquista de fato a rota
+                                        self.jogadores[self.jogador_atual_index].conquistar_rota(data)
+
+                                        # Seta a rota como owned
+                                        self.map_graph.graph[u][v][key]['owned'] = True
+
+                                        # Avisa o mapa que tem que pintar o trilho com a cor do jogador
+                                        self.mapa.atualizar_trens(data['train_pos'], self.jogadores[self.jogador_atual_index].cor)
+
+                                        print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
+
+                                        # Conquistou uma rota, é uma das ações possíveis do turno
+                                        # Então finaliza o turno
+                                        self.passar_turno()
+                                    else:
+                                        print(f"Não foram selecionadas cartas que sejam suficientes para conquistar a rota {u}-{v}")
+                                else:
+                                    print(f"A rota {u}-{v} já está conquistada!")
+
+                            pygame.draw.polygon(self.display, (255, 0, 0), data['train_pos'][poligono], 2) # pode remover dps
+                        else:
+                            pygame.draw.polygon(self.display, (0, 255, 0), data['train_pos'][poligono], 2) # pode remover dps
+
+            # INTERAÇÕES COM CARTAS ====================================================
+            if mouse_clicado:
+                jogador_atual = self.jogadores[self.jogador_atual_index]
+                clicou_em_compra = False
+                # --- CLICOU EM CARTA FECHADA (baralho de vagão) ---
+                if self.mapa.rect_baralho_vagao.collidepoint(mouse_pos):
+                    jogador_atual = self.jogadores[self.jogador_atual_index]
+
+                    # Só permite comprar se ainda não pegou 2 cartas
+                    if self.cartas_compradas_esse_turno < 2:
+                        if self.baralho_trem:
+                            carta_comprada = self.baralho_trem.pop()
+                            jogador_atual.cartas.append(carta_comprada)
+                            self.cartas_compradas_esse_turno += 1
+                            print(f"{jogador_atual.cor} comprou uma carta fechada ({carta_comprada.cor})")
+                        else:
+                            print("O baralho de trem está vazio.")
+                    else:
+                        print("Você já comprou 2 cartas neste turno.")
+                # Clicou em carta lateral
+                for i, carta in enumerate(self.cartas_trem_abertas):
+                    if carta.rect.collidepoint(mouse_pos):
+                        jogador_atual.cartas.append(carta)
+
+                        # Se for coringa, o turno termina automaticamente
+                        if carta.cor == "coringa":
+                            self.cartas_compradas_esse_turno = 2
+                        else:
+                            self.cartas_compradas_esse_turno += 1
+
+                        # Substitui carta lateral
+                        if self.baralho_trem:
+                            self.cartas_trem_abertas[i] = self.baralho_trem.pop()
+                        else:
+                            self.cartas_trem_abertas.pop(i)
+
+                        clicou_em_compra = True
+                        break
+
+                # Se não clicou em carta de compra, verifica a seleção da mão
+                if not clicou_em_compra:
+                    for carta in jogador_atual.cartas:
+                        if carta.rect is not None and carta.rect.collidepoint(mouse_pos):
+                            cor_clicada = carta.cor
+                            for c in jogador_atual.cartas:
+                                c.selecionada = (c.cor == cor_clicada or c.cor == "coringa")
+                            break
+
+                # Passa o turno se necessário
+                if self.cartas_compradas_esse_turno >= 2:
+                    self.passar_turno()
+                    self.cartas_compradas_esse_turno = 0
+
+            # EVENTOS ================================================================
+            mouse_clicado = False
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -93,51 +191,11 @@ class Jogo():
                 # avançar turno
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        jogador_atual.ativo = False
-                        self.jogador_atual_index = (self.jogador_atual_index + 1) % len(self.jogadores)
-                        self.jogadores[self.jogador_atual_index].ativo = True
-                #Clique com mouse esquerdo
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        mouse_pos = pygame.mouse.get_pos()
-                        clicou_em_compra = False
-
-                        # Verifica clique nas cartas de compra (laterais)
-                        for i, carta in enumerate(self.cartas_laterais):
-                            if carta.rect.collidepoint(mouse_pos):
-                                jogador_atual.cartas.append(carta)
-
-                                # Regra: se carta coringa, turno acaba
-                                if carta.cor == "coringa":
-                                    self.cartas_compradas_esse_turno = 2
-                                else:
-                                    self.cartas_compradas_esse_turno += 1
-
-                                # Substitui carta lateral
-                                self.cartas_laterais[i] = self.baralho_trem.pop() if self.baralho_trem else None
-                                self.cartas_laterais = [c for c in self.cartas_laterais if c is not None]
-                                while len(self.cartas_laterais) < 6 and self.baralho_trem:
-                                    self.cartas_laterais.append(self.baralho_trem.pop())
-
-                                clicou_em_compra = True
-                                break
-
-                        # Só permite seleção se não clicou em compra
-                        if not clicou_em_compra:
-                            for carta in jogador_atual.cartas:
-                                if carta.rect.collidepoint(mouse_pos):
-                                    for c in jogador_atual.cartas:
-                                        c.selecionada = False
-                                    carta.selecionada = True
-                                    break
-
-            # Verifica se deve passar o turno
-            if self.cartas_compradas_esse_turno >= 2:
-                jogador_atual.ativo = False
-                self.jogador_atual_index = (self.jogador_atual_index + 1) % len(self.jogadores)
-                self.jogadores[self.jogador_atual_index].ativo = True
-                self.cartas_compradas_esse_turno = 0
+                        self.passar_turno()
+                        self.cartas_compradas_esse_turno = 0
+                    elif event.key == pygame.K_v:
+                        self.map_graph.visualize()
 
 
-            # Update
+
             pygame.display.update()
