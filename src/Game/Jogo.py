@@ -23,6 +23,7 @@ class Jogo():
         self.baralho_objetivo = CartaObjetivo.criar_baralho_objetivo()
         random.shuffle(self.baralho_trem)
         random.shuffle(self.baralho_objetivo)
+        self.cartas_compradas_esse_turno = 0
 
         self.cartas_trem_abertas = []
         for _ in range(5):
@@ -85,6 +86,7 @@ class Jogo():
             # A seleção das cartas já está implementado dentro de Mapa.py
 
             # => SELECIONANDO UMA ROTA
+            # => SELECIONANDO UMA ROTA
             # Passando por todos as arestas do grafo e definindo os poligonos na interface
             for u, v, key, data in self.map_graph.graph.edges(keys=True, data=True):
                 for poligono in data['train_pos']:
@@ -121,6 +123,59 @@ class Jogo():
                         else:
                             pygame.draw.polygon(self.display, (0, 255, 0), data['train_pos'][poligono], 2) # pode remover dps
 
+            # INTERAÇÕES COM CARTAS ====================================================
+            if mouse_clicado:
+                jogador_atual = self.jogadores[self.jogador_atual_index]
+                clicou_em_compra = False
+                # --- CLICOU EM CARTA FECHADA (baralho de vagão) ---
+                if self.mapa.rect_baralho_vagao.collidepoint(mouse_pos):
+                    jogador_atual = self.jogadores[self.jogador_atual_index]
+
+                    # Só permite comprar se ainda não pegou 2 cartas
+                    if self.cartas_compradas_esse_turno < 2:
+                        if self.baralho_trem:
+                            carta_comprada = self.baralho_trem.pop()
+                            jogador_atual.cartas.append(carta_comprada)
+                            self.cartas_compradas_esse_turno += 1
+                            print(f"{jogador_atual.cor} comprou uma carta fechada ({carta_comprada.cor})")
+                        else:
+                            print("O baralho de trem está vazio.")
+                    else:
+                        print("Você já comprou 2 cartas neste turno.")
+                # Clicou em carta lateral
+                for i, carta in enumerate(self.cartas_trem_abertas):
+                    if carta.rect.collidepoint(mouse_pos):
+                        jogador_atual.cartas.append(carta)
+
+                        # Se for coringa, o turno termina automaticamente
+                        if carta.cor == "coringa":
+                            self.cartas_compradas_esse_turno = 2
+                        else:
+                            self.cartas_compradas_esse_turno += 1
+
+                        # Substitui carta lateral
+                        if self.baralho_trem:
+                            self.cartas_trem_abertas[i] = self.baralho_trem.pop()
+                        else:
+                            self.cartas_trem_abertas.pop(i)
+
+                        clicou_em_compra = True
+                        break
+
+                # Se não clicou em carta de compra, verifica a seleção da mão
+                if not clicou_em_compra:
+                    for carta in jogador_atual.cartas:
+                        if carta.rect is not None and carta.rect.collidepoint(mouse_pos):
+                            cor_clicada = carta.cor
+                            for c in jogador_atual.cartas:
+                                c.selecionada = (c.cor == cor_clicada or c.cor == "coringa")
+                            break
+
+                # Passa o turno se necessário
+                if self.cartas_compradas_esse_turno >= 2:
+                    self.passar_turno()
+                    self.cartas_compradas_esse_turno = 0
+
             # EVENTOS ================================================================
             mouse_clicado = False
             for event in pygame.event.get():
@@ -129,17 +184,18 @@ class Jogo():
                     quit()
 
                 # clique do mouse
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_clicado = True
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        mouse_clicado = True
 
                 # avançar turno
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_SPACE:
-                        self.jogadores[self.jogador_atual_index].ativo = False
-                        self.jogador_atual_index = (self.jogador_atual_index + 1) % len(self.jogadores)
-                        self.jogadores[self.jogador_atual_index].ativo = True
-                    # visualize o grafo fora da janela pygame
+                        self.passar_turno()
+                        self.cartas_compradas_esse_turno = 0
                     elif event.key == pygame.K_v:
                         self.map_graph.visualize()
+
+
 
             pygame.display.update()
