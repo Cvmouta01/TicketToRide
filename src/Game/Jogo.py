@@ -6,6 +6,9 @@ from CartaTrem import CartaTrem
 from CartaObjetivo import CartaObjetivo
 from MapGraph import MapGraph
 from Utils import *
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Classe que segurará os objetos de jogo
 class Jogo():
@@ -41,6 +44,18 @@ class Jogo():
         self.jogadores[0].ativo = True
         self.jogador_atual_index = 0
 
+        # Carregando sons
+        pygame.mixer.init()
+
+        train_horn_sound = pygame.mixer.Sound(BASE_DIR + "./assets/sounds/train_horn.wav")
+
+        background_music = pygame.mixer.music.load(BASE_DIR + "./assets/sounds/background_music.wav")
+        pygame.mixer.music.set_volume(0.01)
+
+        self.card_draw_sound = pygame.mixer.Sound(BASE_DIR + "./assets/sounds/card_draw.wav")
+
+        train_horn_sound.play()
+
     def passar_turno(self):
         """
         Passa o turno pro proximo jogador da lista
@@ -60,6 +75,9 @@ class Jogo():
         self.jogadores[self.jogador_atual_index].ativo = True
 
     def game_loop(self):
+        # Tocando som de fundo
+        pygame.mixer.music.play(loops=-1)
+
         for u, v, key, data in self.map_graph.graph.edges(keys=True, data=True):
             print(f"Aresta {u}-{v} (key={key}): {data}")
 
@@ -138,6 +156,9 @@ class Jogo():
                             jogador_atual.cartas.append(carta_comprada)
                             self.cartas_compradas_esse_turno += 1
                             print(f"{jogador_atual.cor} comprou uma carta fechada ({carta_comprada.cor})")
+                            
+                            # Tocando o som
+                            self.card_draw_sound.play()
                         else:
                             print("O baralho de trem está vazio.")
                     else:
@@ -160,6 +181,9 @@ class Jogo():
                             self.cartas_trem_abertas.pop(i)
 
                         clicou_em_compra = True
+
+                        # Tocando o som
+                        self.card_draw_sound.play()
                         break
 
                 # Se não clicou em carta de compra, verifica a seleção da mão
