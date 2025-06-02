@@ -42,7 +42,7 @@ def menuPrincipal():
         # Jogar o jogo
         if Utils.button(screen, "Jogar", 20, pygame.Rect(screen.get_width()//2 - 150, 150, 300, 50), settings.BUTTON_COLOR, settings.BUTTON_ACTIVE_COLOR):
             num_jogadores = max(2, min(5, 4))
-            cores_disponiveis = ["vermelho", "amarelo", "verde", "azul", "preto"]
+            cores_disponiveis = ["vermelho", "amarelo", "verde", "azul", "cinza"]
             cores_escolhidas = random.sample(cores_disponiveis, num_jogadores)
 
             ticket_to_ride = Jogo(cores_escolhidas, screen.get_width(), screen.get_height())
