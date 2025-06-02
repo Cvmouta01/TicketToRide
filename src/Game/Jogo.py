@@ -27,6 +27,7 @@ class Jogo():
         random.shuffle(self.baralho_trem)
         random.shuffle(self.baralho_objetivo)
         self.cartas_compradas_esse_turno = 0
+        self.cartas_abertas_compradas_nesse_turno = 0
 
         self.cartas_trem_abertas = []
         for _ in range(5):
@@ -163,42 +164,44 @@ class Jogo():
                             print("O baralho de trem está vazio.")
                     else:
                         print("Você já comprou 2 cartas neste turno.")
+
                 # Clicou em carta lateral
                 for i, carta in enumerate(self.cartas_trem_abertas):
                     if carta.rect.collidepoint(mouse_pos):
-                        jogador_atual.cartas.append(carta)
+                        # Se não clicou num coringa aberto, ou se clicou num coringa aberto e ainda não comprou nenhuma aberta
+                        if carta.cor != "coringa" or (carta.cor == "coringa" and self.cartas_abertas_compradas_nesse_turno == 0):
+                            jogador_atual.cartas.append(carta) # Compra a carta
 
-                        # Se for coringa, o turno termina automaticamente
-                        if carta.cor == "coringa":
-                            self.cartas_compradas_esse_turno = 2
-                        else:
                             self.cartas_compradas_esse_turno += 1
+                            self.cartas_abertas_compradas_nesse_turno += 1
 
-                        # Substitui carta lateral
-                        if self.baralho_trem:
-                            self.cartas_trem_abertas[i] = self.baralho_trem.pop()
-                        else:
-                            self.cartas_trem_abertas.pop(i)
+                            if carta.cor == "coringa": # Se a carta for um coringa, adiciona novamente pra terminar o turno
+                                self.cartas_compradas_esse_turno += 1
+                                self.cartas_abertas_compradas_nesse_turno += 1
 
-                        clicou_em_compra = True
 
-                        # Tocando o som
-                        self.card_draw_sound.play()
+                            # Substitui carta lateral
+                            if self.baralho_trem:
+                                self.cartas_trem_abertas[i] = self.baralho_trem.pop()
+                            else:
+                                self.cartas_trem_abertas.pop(i)
+
+                            clicou_em_compra = True
+
+                            # Tocando o som
+                            self.card_draw_sound.play()
                         break
 
                 # Se não clicou em carta de compra, verifica a seleção da mão
+                # Seleção da mão já está implementado em Mapa -> desenhar_mao_jogador()
                 if not clicou_em_compra:
-                    for carta in jogador_atual.cartas:
-                        if carta.rect is not None and carta.rect.collidepoint(mouse_pos):
-                            cor_clicada = carta.cor
-                            for c in jogador_atual.cartas:
-                                c.selecionada = (c.cor == cor_clicada or c.cor == "coringa")
-                            break
+                    pass
 
                 # Passa o turno se necessário
                 if self.cartas_compradas_esse_turno >= 2:
                     self.passar_turno()
                     self.cartas_compradas_esse_turno = 0
+                    self.cartas_abertas_compradas_nesse_turno = 0
 
             # EVENTOS ================================================================
             mouse_clicado = False
