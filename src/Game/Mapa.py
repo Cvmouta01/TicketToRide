@@ -101,21 +101,18 @@ class Mapa():
             if dentro_poligono(mouse_info[0], [rect.topleft,
                                    (rect.right, rect.top),
                                    (rect.left, rect.bottom),
-                                   (rect.right, rect.bottom)]) and mouse_info[1]:
-                nova_selecao = not primeira_carta_por_cor[cor].selecionada
-
-                for carta in mao_jogador:
-                    if carta.cor == cor:
-                        carta.selecionada = nova_selecao
-
-            # Se não foi clicada mas passou em cima, sobe um pouco a carta (e a borda, se necessário)
-            elif dentro_poligono(mouse_info[0], [rect.topleft,
-                                   (rect.right, rect.top),
-                                   (rect.left, rect.bottom),
-                                   (rect.right, rect.bottom)]) and not mouse_info[1]:
+                                   (rect.right, rect.bottom)]):
+                
+                # Hover
                 y -= 10
                 rect[1], rect[3] = rect[1] - 10, rect[3] - 10
-                
+                 
+                if mouse_info[1]:
+                    nova_selecao = not primeira_carta_por_cor[cor].selecionada
+
+                    for carta in mao_jogador:
+                        if carta.cor == cor:
+                            carta.selecionada = nova_selecao
 
             # Desenhando de fato a carta
             surface.blit(imagem_rot, (x, y))
@@ -168,18 +165,18 @@ class Mapa():
             x = x_inicial
             y = y_inicial + i * (altura_red + espacamento)
 
-            surface.blit(imagem_red, (x, y))
             rect = pygame.Rect(x, y, largura_red, altura_red)
             carta.rect = rect
 
             if dentro_poligono(mouse_info[0], [rect.topleft,
                                             (rect.right, rect.top),
                                             (rect.left, rect.bottom),
-                                            (rect.right, rect.bottom)]) and mouse_info[1]:
-                carta.selecionada = not carta.selecionada
+                                            (rect.right, rect.bottom)]):
+                x -= 10
 
-            if carta.selecionada:
-                pygame.draw.rect(surface, (255, 255, 0), rect, 3)
+            surface.blit(imagem_red, (x, y))
+            
+                 
 
 
     def draw(self, surface, jogadores, cartas_trem_abertas, mouse_info):
