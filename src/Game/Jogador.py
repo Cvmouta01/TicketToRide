@@ -22,7 +22,7 @@ class Jogador():
         Faz a contagem das cartas selecionadas e verifica se
         essas são suficientes para conquistar a rota dada
         """
-        contagem_cores = {}
+        contagem_cores = {'vermelho' : 0, 'azul' : 0, 'verde' : 0, 'amarelo' : 0, 'preto' : 0, 'branco' : 0, 'laranja' : 0, 'rosa' : 0, 'coringa' : 0}
         coringas = 0
         # Passa por todas as cartas
         for carta in self.cartas:
