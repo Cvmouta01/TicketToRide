@@ -93,8 +93,6 @@ class Mapa():
             x = x_inicial + i * espacamento
             y = y_inicial
 
-            surface.blit(imagem_rot, (x, y))
-
             rect = pygame.Rect(x, y, altura_red, largura_red)  # largura e altura invertidos
             primeira_carta = primeira_carta_por_cor[cor]
             primeira_carta.rect = rect
@@ -107,8 +105,20 @@ class Mapa():
                 nova_selecao = not primeira_carta_por_cor[cor].selecionada
 
                 for carta in mao_jogador:
-                    if carta.cor == cor or carta.cor == "coringa":
+                    if carta.cor == cor:
                         carta.selecionada = nova_selecao
+
+            # Se não foi clicada mas passou em cima, sobe um pouco a carta (e a borda, se necessário)
+            elif dentro_poligono(mouse_info[0], [rect.topleft,
+                                   (rect.right, rect.top),
+                                   (rect.left, rect.bottom),
+                                   (rect.right, rect.bottom)]) and not mouse_info[1]:
+                y -= 10
+                rect[1], rect[3] = rect[1] - 10, rect[3] - 10
+                
+
+            # Desenhando de fato a carta
+            surface.blit(imagem_rot, (x, y))
 
 
             # Se qualquer carta dessa cor estiver selecionada, desenha borda
