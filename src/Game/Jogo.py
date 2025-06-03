@@ -7,8 +7,6 @@ from CartaObjetivo import CartaObjetivo
 from MapGraph import MapGraph
 from Utils import *
 import os
-import pickle
-from tkinter import Tk, filedialog
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -16,15 +14,13 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 class Jogo():
     # Jogadores é um array de cores
     def __init__(self, jogadores, width, height):
-        self.width = width
-        self.height = height
-#        self.display = pygame.display.set_mode((width, height))
-#        pygame.display.set_caption("Ticket to Ride")
+        self.display = pygame.display.set_mode((width, height))
+        pygame.display.set_caption("Ticket to Ride")
 
-#        self.map_graph = MapGraph()
-#        self.mapa = Mapa(self.display)
-#        self.map_graph.update_arestas(self.display, self.mapa) # Atualiza as arestas carregadas para as coordenadas novas
-#        self.mapa.grafo_cidades = self.map_graph.graph
+        self.map_graph = MapGraph()
+        self.mapa = Mapa(self.display)
+        self.map_graph.update_arestas(self.display, self.mapa) # Atualiza as arestas carregadas para as coordenadas novas
+        self.mapa.grafo_cidades = self.map_graph.graph
 
         self.baralho_trem = CartaTrem.criar_baralho_trem()
         self.baralho_objetivo = CartaObjetivo.criar_baralho_objetivo()
@@ -49,17 +45,16 @@ class Jogo():
         self.jogador_atual_index = 0
 
         # Carregando sons
-#        pygame.mixer.init()
+        pygame.mixer.init()
 
-#        train_horn_sound = pygame.mixer.Sound(BASE_DIR + "./assets/sounds/train_horn.wav")
+        train_horn_sound = pygame.mixer.Sound(BASE_DIR + "./assets/sounds/train_horn.wav")
 
-#        background_music = pygame.mixer.music.load(BASE_DIR + "./assets/sounds/background_music.wav")
-#        pygame.mixer.music.set_volume(0.01)
+        background_music = pygame.mixer.music.load(BASE_DIR + "./assets/sounds/background_music.wav")
+        pygame.mixer.music.set_volume(0.01)
 
-#        self.card_draw_sound = pygame.mixer.Sound(BASE_DIR + "./assets/sounds/card_draw.wav")
+        self.card_draw_sound = pygame.mixer.Sound(BASE_DIR + "./assets/sounds/card_draw.wav")
 
-
-#        train_horn_sound.play()
+        train_horn_sound.play()
 
     def passar_turno(self):
         """
@@ -80,32 +75,6 @@ class Jogo():
         self.jogadores[self.jogador_atual_index].ativo = True
 
     def game_loop(self):
-        #Iniciando o que não pode ser serializado
-        pygame.init()
-        display = pygame.display.set_mode((self.width, self.height))
-        pygame.display.set_caption("Ticket to Ride")
-
-        #Iniciando mapa
-        self.map_graph = MapGraph()
-        mapa = Mapa(display)
-        self.map_graph.update_arestas(display, mapa) # Atualiza as arestas carregadas para as coordenadas novas
-        mapa.grafo_cidades = self.map_graph.graph
-        
-        #Carregando audio
-        pygame.mixer.init()
-
-        train_horn_sound = pygame.mixer.Sound(BASE_DIR + "./assets/sounds/train_horn.wav")
-
-        background_music = pygame.mixer.music.load(BASE_DIR + "./assets/sounds/background_music.wav")
-        pygame.mixer.music.set_volume(0.01)
-
-        card_draw_sound = pygame.mixer.Sound(BASE_DIR + "./assets/sounds/card_draw.wav")
-
-        train_horn_sound.play()
-
-
-
-
         # Tocando som de fundo
         pygame.mixer.music.play(loops=-1)
 
@@ -120,8 +89,8 @@ class Jogo():
             # Draw ==================================================================
 
             # Passa pro desenho do mapa o display, os jogadores, as cartas abertas e informações sobre o mouse
-            mapa.draw(display, self.jogadores, self.cartas_trem_abertas, [mouse_pos, mouse_clicado])
-            
+            self.mapa.draw(self.display, self.jogadores, self.cartas_trem_abertas, [mouse_pos, mouse_clicado])
+
             # CONQUISTANDO ROTAS =====================================================
 
             # Ideia:
@@ -140,7 +109,7 @@ class Jogo():
             for u, v, key, data in self.map_graph.graph.edges(keys=True, data=True):
                 for poligono in data['train_pos']:
                     if self.map_graph.graph[u][v][key]['owned']:
-                        pygame.draw.polygon(display, (0, 0, 0), data['train_pos'][poligono], 2)
+                        pygame.draw.polygon(self.display, (0, 0, 0), data['train_pos'][poligono], 2)
                     else:
                         if dentro_poligono(mouse_pos, data['train_pos'][poligono]):
                             if mouse_clicado:
@@ -156,7 +125,7 @@ class Jogo():
                                         self.map_graph.graph[u][v][key]['owned'] = True
 
                                         # Avisa o mapa que tem que pintar o trilho com a cor do jogador
-                                        mapa.atualizar_trens(data['train_pos'], self.jogadores[self.jogador_atual_index].cor)
+                                        self.mapa.atualizar_trens(data['train_pos'], self.jogadores[self.jogador_atual_index].cor)
 
                                         print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
 
@@ -168,16 +137,16 @@ class Jogo():
                                 else:
                                     print(f"A rota {u}-{v} já está conquistada!")
 
-                            pygame.draw.polygon(display, (255, 0, 0), data['train_pos'][poligono], 2) # pode remover dps
+                            pygame.draw.polygon(self.display, (255, 0, 0), data['train_pos'][poligono], 2) # pode remover dps
                         else:
-                            pygame.draw.polygon(display, (0, 255, 0), data['train_pos'][poligono], 2) # pode remover dps
+                            pygame.draw.polygon(self.display, (0, 255, 0), data['train_pos'][poligono], 2) # pode remover dps
 
             # INTERAÇÕES COM CARTAS ====================================================
             if mouse_clicado:
                 jogador_atual = self.jogadores[self.jogador_atual_index]
                 clicou_em_compra = False
                 # --- CLICOU EM CARTA FECHADA (baralho de vagão) ---
-                if mapa.rect_baralho_vagao.collidepoint(mouse_pos):
+                if self.mapa.rect_baralho_vagao.collidepoint(mouse_pos):
                     jogador_atual = self.jogadores[self.jogador_atual_index]
 
                     # Só permite comprar se ainda não pegou 2 cartas
@@ -189,7 +158,7 @@ class Jogo():
                             print(f"{jogador_atual.cor} comprou uma carta fechada ({carta_comprada.cor})")
                             
                             # Tocando o som
-                            card_draw_sound.play()
+                            self.card_draw_sound.play()
                         else:
                             print("O baralho de trem está vazio.")
                     else:
@@ -214,7 +183,7 @@ class Jogo():
                         clicou_em_compra = True
 
                         # Tocando o som
-                        card_draw_sound.play()
+                        self.card_draw_sound.play()
                         break
 
                 # Se não clicou em carta de compra, verifica a seleção da mão
@@ -225,10 +194,6 @@ class Jogo():
                             for c in jogador_atual.cartas:
                                 c.selecionada = (c.cor == cor_clicada or c.cor == "coringa")
                             break
-                
-                #Clicou botão salvar
-                if mouse_pos[0] < 53 and mouse_pos[1]> display.get_height() - 53:
-                    salvar_jogo(self)
 
                 # Passa o turno se necessário
                 if self.cartas_compradas_esse_turno >= 2:
@@ -258,42 +223,3 @@ class Jogo():
 
 
             pygame.display.update()
-
-
-
-def salvar_jogo(jogo):
-    root = Tk()
-    root.withdraw()
-
-    caminho_arquivo = filedialog.asksaveasfilename(
-        title="Salvar jogo",
-        defaultextension=".pkl",
-        filetypes=[("Arquivos de jogo", "*.pkl")]
-    )
-
-    if not caminho_arquivo:
-        print("Salvamento cancelado.")
-        return
-
-    with open(caminho_arquivo, 'wb') as f:
-        pickle.dump(jogo, f)
-
-    print(f"Jogo salvo em: {caminho_arquivo}")
-
-def carregar_jogo():
-    root = Tk()
-    root.withdraw()  # Oculta a janela principal do Tkinter
-
-    caminho_arquivo = filedialog.askopenfilename(
-        title="Selecione um arquivo de jogo salvo",
-        filetypes=[("Arquivos de jogo", "*.pkl")]
-    )
-
-    if not caminho_arquivo:
-        print("Nenhum arquivo selecionado.")
-        return None
-
-    with open(caminho_arquivo, 'rb') as f:
-        jogo = pickle.load(f)
-
-    return jogo

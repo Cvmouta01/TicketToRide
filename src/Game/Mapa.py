@@ -45,9 +45,6 @@ class Mapa():
             self.img_cartas_trem_vertical[card_name] = trem_v
             self.img_cartas_trem_horizontal[card_name] = trem_h
         
-        # Adicionando botão save
-        self.saveimg = pygame.image.load(BASE_DIR + "./assets/Images/save-64x64.png")
-
         self.grafo_cidades = None
         self.trilhos_conquistados = []
     # Recebe uma superficie e a lista de jogadores
@@ -205,9 +202,6 @@ class Mapa():
         for jogador in jogadores:
             self.criar_card_jogador(surface, jogador, (cards_x, cards_y, cards_w, cards_h))
             cards_y += cards_h + 20
-        
-        # Desenha botão
-        surface.blit(self.saveimg,(5, surface.get_height()-53))
 
     # Retorna um card de jogador, contendo um fundo, um avatar na cor correta
     # Qtd de trens e pontos tem que vir da classe jogador!
