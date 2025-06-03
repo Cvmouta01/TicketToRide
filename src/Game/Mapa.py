@@ -17,9 +17,19 @@ class Mapa():
         self.map_img = resize_com_escala(self.map_img, width, height, 0.8, 0.8)
         self.new_width, self.new_height = self.map_img.get_width(), self.map_img.get_height() # Novas dimensões da img
 
+        # Carregando o fundo que fica atras de tudo
+        self.background_img = pygame.image.load(BASE_DIR + "./assets/Images/Mapa/background.png")
+        self.background_img = resize_com_escala(self.background_img, width, height, 1, 1)
+
         # Carregando a img do avatar dos cards de jogadores e dando resize
         self.avatar = pygame.image.load(BASE_DIR + "./assets/Images/avatar_card.png")
         self.avatar = resize_com_escala(self.avatar, width, height, 0.04, 0.04)
+
+        self.pontos_img = pygame.image.load(BASE_DIR + "./assets/Images/pontos_img.png")
+        self.pontos_img = resize_com_escala(self.pontos_img, width, height, 0.02, 0.02)
+
+        self.qtd_trens_img = pygame.image.load(BASE_DIR + "./assets/Images/qtd_trens_img.png")
+        self.qtd_trens_img = resize_com_escala(self.qtd_trens_img, width, height, 0.02, 0.02)
 
         # Carregando a img do fundo das cartas de vagão e de destino
         self.fundo_vagao = pygame.image.load(BASE_DIR + "./assets/Images/Fundos/fundo_vagao.png")
@@ -96,8 +106,6 @@ class Mapa():
             x = x_inicial + i * espacamento
             y = y_inicial
 
-            surface.blit(imagem_rot, (x, y))
-
             rect = pygame.Rect(x, y, altura_red, largura_red)  # largura e altura invertidos
             primeira_carta = primeira_carta_por_cor[cor]
             primeira_carta.rect = rect
@@ -106,12 +114,21 @@ class Mapa():
             if dentro_poligono(mouse_info[0], [rect.topleft,
                                    (rect.right, rect.top),
                                    (rect.left, rect.bottom),
-                                   (rect.right, rect.bottom)]) and mouse_info[1]:
-                nova_selecao = not primeira_carta_por_cor[cor].selecionada
+                                   (rect.right, rect.bottom)]):
+                
+                # Hover
+                y -= 10
+                rect[1], rect[3] = rect[1] - 10, rect[3] - 10
+                 
+                if mouse_info[1]:
+                    nova_selecao = not primeira_carta_por_cor[cor].selecionada
 
-                for carta in mao_jogador:
-                    if carta.cor == cor or carta.cor == "coringa":
-                        carta.selecionada = nova_selecao
+                    for carta in mao_jogador:
+                        if carta.cor == cor:
+                            carta.selecionada = nova_selecao
+
+            # Desenhando de fato a carta
+            surface.blit(imagem_rot, (x, y))
 
 
             # Se qualquer carta dessa cor estiver selecionada, desenha borda
@@ -161,22 +178,25 @@ class Mapa():
             x = x_inicial
             y = y_inicial + i * (altura_red + espacamento)
 
-            surface.blit(imagem_red, (x, y))
             rect = pygame.Rect(x, y, largura_red, altura_red)
             carta.rect = rect
 
             if dentro_poligono(mouse_info[0], [rect.topleft,
                                             (rect.right, rect.top),
                                             (rect.left, rect.bottom),
-                                            (rect.right, rect.bottom)]) and mouse_info[1]:
-                carta.selecionada = not carta.selecionada
+                                            (rect.right, rect.bottom)]):
+                x -= 10
 
-            if carta.selecionada:
-                pygame.draw.rect(surface, (255, 255, 0), rect, 3)
+            surface.blit(imagem_red, (x, y))
+            
+                 
 
 
     def draw(self, surface, jogadores, cartas_trem_abertas, mouse_info):
         surface.fill((198, 197, 176))
+
+        surface.blit(self.background_img, (0, 0)) # Colando o fundo
+
         surface.blit(self.map_img, (surface.get_width()//2 - self.map_img.get_width()//2, 0))
 
         # Desenha baralhos destino e vagão (igual antes)
@@ -216,7 +236,8 @@ class Mapa():
         if jogador.ativo:
             pygame.draw.rect(surface, 
                             (255, 255, 255),
-                            (rect[0] - 10, rect[1] - 10, rect[2] + 20, rect[3] + 20))
+                            (rect[0] - 10, rect[1] - 10, rect[2] + 20, rect[3] + 20),
+                            border_radius=5)
         # Desenhando o fundo na cor certa
         pygame.draw.rect(surface, 
                          cores[jogador.cor],
@@ -225,20 +246,25 @@ class Mapa():
         # Desenhando o avatar
 
         surface.blit(self.avatar, (rect[0], rect[1])) # Desenhando na tela
+
         
         # Desenhando a qtd de pontos no canto superior direito do card
-        pontos_txt = message_to_screen(surface, "P: "+ str(jogador.pontos), 20, rect[0], rect[1], (0, 0, 0), returning=True)
+        pontos_txt = message_to_screen(surface, str(jogador.pontos), 20, rect[0], rect[1], (0, 0, 0), returning=True)
         p_x, p_y, p_w, p_h = pontos_txt["text_rect"]
-        surface.blit(pontos_txt["text"], (p_x + rect[2] - p_w, p_y + p_h, p_w, p_h))
+
+        surface.blit(pontos_txt["text"], (p_x + rect[2] - p_w - self.pontos_img.get_width(), p_y + p_h, p_w, p_h))
+        surface.blit(self.pontos_img, (p_x + rect[2] - self.pontos_img.get_width(), p_y + p_h - self.pontos_img.get_height()/3))
 
         # Desenhando a qtd de trens no canto inferior direito do card
-        trens_txt = message_to_screen(surface, "T: " + str(jogador.trens), 20, rect[0], rect[1], (0, 0, 0), returning=True)
+        trens_txt = message_to_screen(surface, str(jogador.trens), 20, rect[0], rect[1], (0, 0, 0), returning=True)
         t_x, t_y, t_w, t_h = trens_txt["text_rect"]
-        surface.blit(trens_txt["text"], (t_x + rect[2] - t_w, t_y + rect[3] - t_h, t_w, t_h))
+
+        surface.blit(trens_txt["text"], (t_x + rect[2] - t_w - self.qtd_trens_img.get_width(), t_y + rect[3] - t_h, t_w, t_h))
+        surface.blit(self.qtd_trens_img, (t_x + rect[2] - self.qtd_trens_img.get_width(), t_y + rect[3] - t_h - self.qtd_trens_img.get_height()/3))
         
         # Se for o turno do jogador, escreve "Vez" centralizado horizontalmente com base no avatar
         if jogador.ativo:
-            jogando_txt = message_to_screen(surface, "Vez", 12, rect[0], rect[1], (0, 0, 0), returning=True)
+            jogando_txt = message_to_screen(surface, "Turno", 12, rect[0], rect[1], (0, 0, 0), returning=True)
             j_x, j_y, j_w, j_h = jogando_txt["text_rect"]
             avatar_center_x = rect[0] + self.avatar.get_width() // 2
             surface.blit(jogando_txt["text"], (avatar_center_x - j_w // 2, rect[1] + self.avatar.get_height() + 2))

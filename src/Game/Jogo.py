@@ -31,6 +31,7 @@ class Jogo():
         random.shuffle(self.baralho_trem)
         random.shuffle(self.baralho_objetivo)
         self.cartas_compradas_esse_turno = 0
+        self.cartas_abertas_compradas_nesse_turno = 0
 
         self.cartas_trem_abertas = []
         for _ in range(5):
@@ -148,9 +149,10 @@ class Jogo():
                                 # Se a aresta não ta "owned"
                                 if not self.map_graph.graph[u][v][key]["owned"]:
                                     # Se o player pode conquistar a rota
-                                    if self.jogadores[self.jogador_atual_index].pode_conquistar(data):
+                                    conquista_possivel = self.jogadores[self.jogador_atual_index].pode_conquistar(data)
+                                    if conquista_possivel != None:
                                         # Conquista de fato a rota
-                                        self.jogadores[self.jogador_atual_index].conquistar_rota(data)
+                                        self.jogadores[self.jogador_atual_index].conquistar_rota(data, conquista_possivel)
 
                                         # Seta a rota como owned
                                         self.map_graph.graph[u][v][key]['owned'] = True
@@ -194,30 +196,35 @@ class Jogo():
                             print("O baralho de trem está vazio.")
                     else:
                         print("Você já comprou 2 cartas neste turno.")
+
                 # Clicou em carta lateral
                 for i, carta in enumerate(self.cartas_trem_abertas):
                     if carta.rect.collidepoint(mouse_pos):
-                        jogador_atual.cartas.append(carta)
+                        # Se não clicou num coringa aberto, ou se clicou num coringa aberto e ainda não comprou nenhuma aberta
+                        if carta.cor != "coringa" or (carta.cor == "coringa" and self.cartas_abertas_compradas_nesse_turno == 0):
+                            jogador_atual.cartas.append(carta) # Compra a carta
 
-                        # Se for coringa, o turno termina automaticamente
-                        if carta.cor == "coringa":
-                            self.cartas_compradas_esse_turno = 2
-                        else:
                             self.cartas_compradas_esse_turno += 1
+                            self.cartas_abertas_compradas_nesse_turno += 1
 
-                        # Substitui carta lateral
-                        if self.baralho_trem:
-                            self.cartas_trem_abertas[i] = self.baralho_trem.pop()
-                        else:
-                            self.cartas_trem_abertas.pop(i)
+                            if carta.cor == "coringa": # Se a carta for um coringa, adiciona novamente pra terminar o turno
+                                self.cartas_compradas_esse_turno += 1
+                                self.cartas_abertas_compradas_nesse_turno += 1
 
-                        clicou_em_compra = True
+                            # Substitui carta lateral
+                            if self.baralho_trem:
+                                self.cartas_trem_abertas[i] = self.baralho_trem.pop()
+                            else:
+                                self.cartas_trem_abertas.pop(i)
 
-                        # Tocando o som
-                        card_draw_sound.play()
-                        break
+                            clicou_em_compra = True
+
+                            # Tocando o som
+                            card_draw_sound.play()
+                            break
 
                 # Se não clicou em carta de compra, verifica a seleção da mão
+                # Seleção da mão já está implementado em Mapa -> desenhar_mao_jogador()
                 if not clicou_em_compra:
                     for carta in jogador_atual.cartas:
                         if carta.rect is not None and carta.rect.collidepoint(mouse_pos):
@@ -230,10 +237,13 @@ class Jogo():
                 if mouse_pos[0] < 53 and mouse_pos[1]> display.get_height() - 53:
                     salvar_jogo(self)
 
+      
+
                 # Passa o turno se necessário
                 if self.cartas_compradas_esse_turno >= 2:
                     self.passar_turno()
                     self.cartas_compradas_esse_turno = 0
+                    self.cartas_abertas_compradas_nesse_turno = 0
 
             # EVENTOS ================================================================
             mouse_clicado = False

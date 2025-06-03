@@ -21,8 +21,10 @@ class Jogador():
         """
         Faz a contagem das cartas selecionadas e verifica se
         essas são suficientes para conquistar a rota dada
+
+        Retorna a cor a ser usada para a conquista
         """
-        contagem_cores = {'vermelho' : 0, 'azul' : 0, 'verde' : 0, 'amarelo' : 0, 'preto' : 0, 'branco' : 0, 'laranja' : 0, 'rosa' : 0, 'coringa' : 0}
+        contagem_cores = {'vermelho' : 0, 'azul' : 0, 'verde' : 0, 'amarelo' : 0, 'preto' : 0, 'branco' : 0, 'laranja' : 0, 'rosa' : 0}
         coringas = 0
         # Passa por todas as cartas
         for carta in self.cartas:
@@ -36,13 +38,24 @@ class Jogador():
                     else:
                         contagem_cores[carta.cor] = 1
 
-        # Se for uma rota cinza, basta ter selecionado uma qtd de cartas igual ao tamanho da rota
+        # Se for uma rota cinza, basta ter selecionado uma qtd de cartas DE MESMA COR igual ao tamanho da rota
         if rota["color"] == "cinza":
-            return any(qtd + coringas >= rota["length"] for qtd in contagem_cores.values())
-        else: # Se for uma rota de outra cor, basta ver a qtd de cores selecionadas + coringas e ver se é maior que o tamanho da rota
-            return contagem_cores[rota["color"]] + coringas >= rota["length"]
+            maior_cor = max(contagem_cores.items(), key=lambda item: item[1]) # Pega a cor que está em maior qtd
 
-    def conquistar_rota(self, rota):
+            if maior_cor[1] != 0: # Se a maior qtd de cores não for 0 (seria o caso em que o player selecionou só coringas)
+                return maior_cor[0]
+            
+            elif coringas >= rota["length"]: # Significa que o player selecionou só coringas
+                return "vermelho" # Retorna alguma coisa, só pra não quebrar
+            
+        else: # Se for uma rota de outra cor, basta ver a qtd de cores selecionadas + coringas e ver se é maior que o tamanho da rota
+            if contagem_cores[rota["color"]] + coringas >= rota["length"]:
+                return rota["color"]
+
+        # Não foram selecionadas cartas o suficiente para conqusitar
+        return None
+
+    def conquistar_rota(self, rota, conquista_possivel):
         """
         Remove as cartas selecionadas usadas para conquistar a rota
 
@@ -55,9 +68,52 @@ class Jogador():
         5 trem=> 10
         6 trem=> 15
         """
-        # Ta bem simples, apenas remove todas as cartas selecionadas.
-        # Não verifica se o player selecionou mais do que deveria
-        self.cartas = [carta for carta in self.cartas if not carta.selecionada]
+
+        # Removendo as cartas de mão %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        # Ideia: passa por todas as cartas de mão e pega N cartas selecionadas da cor da rota onde N é o tamanho da rota.
+        # Caso não tenha encontrado cartas da cor da rota suficientes, começa a pegar os coringas
+
+        cartas_usadas = []
+        qtd_cartas_necessairas = rota["length"] # Pra garantir que não vão ser usadas mais cartas que o necessário
+
+        # Itera por todas as cartas da cor da rota
+        for carta in self.cartas:
+
+            if qtd_cartas_necessairas == 0: # Se já pegou cartas o suficiente sai do loop
+                break
+
+            if carta.selecionada: # Se é uma carta selecionada
+
+                # Se for uma rota cinza, garante que o player usará apenas cartas de uma unica cor
+                # (definida em pode_conquistar como sendo a cor com maior qtd de cartas selecionadas)
+                # Se não for uma rota cinza, apenas verifica se a carta tem a cor da rota
+                if (rota["color"] == "cinza" and carta.cor == conquista_possivel) or (rota["color"] != "cinza" and carta.cor == rota["color"]):
+                    cartas_usadas.append(carta)
+                    qtd_cartas_necessairas -= 1
+
+         # Se ainda não pegou cartas o suficiente, começa a pegar coringas
+        if qtd_cartas_necessairas > 0:
+
+            for carta in self.cartas:
+
+                if qtd_cartas_necessairas == 0:
+                    break
+
+                if carta.selecionada and carta.cor == "coringa":
+                    cartas_usadas.append(carta)
+                    qtd_cartas_necessairas -= 1
+
+        # Por fim, remove tais cartas da mão do jogador
+        for carta in cartas_usadas:
+            self.cartas.remove(carta)
+
+        # Desseleciona todas as cartas da mão
+        for carta in self.cartas: carta.selecionada = False
+
+        # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
         # Concedendo pontos ao player com base no tamanho da rota
         match rota["length"]:
