@@ -118,9 +118,10 @@ class Jogo():
                                 # Se a aresta não ta "owned"
                                 if not self.map_graph.graph[u][v][key]["owned"]:
                                     # Se o player pode conquistar a rota
-                                    if self.jogadores[self.jogador_atual_index].pode_conquistar(data):
+                                    conquista_possivel = self.jogadores[self.jogador_atual_index].pode_conquistar(data)
+                                    if conquista_possivel != None:
                                         # Conquista de fato a rota
-                                        self.jogadores[self.jogador_atual_index].conquistar_rota(data)
+                                        self.jogadores[self.jogador_atual_index].conquistar_rota(data, conquista_possivel)
 
                                         # Seta a rota como owned
                                         self.map_graph.graph[u][v][key]['owned'] = True
