@@ -227,7 +227,7 @@ class Mapa():
             cards_y += cards_h + 20
         
         # Desenha botão
-        surface.blit(self.saveimg,(5, surface.get_height()-53))
+        surface.blit(self.saveimg,(5, 5))
 
     # Retorna um card de jogador, contendo um fundo, um avatar na cor correta
     # Qtd de trens e pontos tem que vir da classe jogador!

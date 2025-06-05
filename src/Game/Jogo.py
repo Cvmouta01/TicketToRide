@@ -18,14 +18,6 @@ class Jogo():
     def __init__(self, jogadores, width, height):
         self.width = width
         self.height = height
-#        self.display = pygame.display.set_mode((width, height))
-#        pygame.display.set_caption("Ticket to Ride")
-
-#        self.map_graph = MapGraph()
-#        self.mapa = Mapa(self.display)
-#        self.map_graph.update_arestas(self.display, self.mapa) # Atualiza as arestas carregadas para as coordenadas novas
-#        self.mapa.grafo_cidades = self.map_graph.graph
-
         self.baralho_trem = CartaTrem.criar_baralho_trem()
         self.baralho_objetivo = CartaObjetivo.criar_baralho_objetivo()
         random.shuffle(self.baralho_trem)
@@ -48,19 +40,6 @@ class Jogo():
 
         self.jogadores[0].ativo = True
         self.jogador_atual_index = 0
-
-        # Carregando sons
-#        pygame.mixer.init()
-
-#        train_horn_sound = pygame.mixer.Sound(BASE_DIR + "./assets/sounds/train_horn.wav")
-
-#        background_music = pygame.mixer.music.load(BASE_DIR + "./assets/sounds/background_music.wav")
-#        pygame.mixer.music.set_volume(0.01)
-
-#        self.card_draw_sound = pygame.mixer.Sound(BASE_DIR + "./assets/sounds/card_draw.wav")
-
-
-#        train_horn_sound.play()
 
     def passar_turno(self):
         """
@@ -234,7 +213,7 @@ class Jogo():
                             break
                 
                 #Clicou botão salvar
-                if mouse_pos[0] < 53 and mouse_pos[1]> display.get_height() - 53:
+                if mouse_pos[0] < 53 and mouse_pos[1] < 53:
                     salvar_jogo(self)
 
       
