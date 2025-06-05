@@ -6,11 +6,12 @@ from settingsScreen import settingsScreen
 from Jogo import Jogo
 import random
 
-def menuPrincipal():
-    pygame.init()
 
-    window_Size = settings.window_sizes[0]
-    screen = pygame.display.set_mode(window_Size)
+def menuPrincipal(height, width):
+    pygame.init()
+    
+
+    screen = pygame.display.set_mode((height, width))
     pygame.display.set_caption(settings.WINDOW_TITLE)
     running = True
     fullscreen = False
@@ -45,17 +46,16 @@ def menuPrincipal():
 
         # Jogar o jogo
         if Utils.button(screen, "Jogar", 20, pygame.Rect(screen.get_width()//2 - 150, 150, 300, 50), settings.BUTTON_COLOR, settings.BUTTON_ACTIVE_COLOR) and mouse_state == [0,1]:
-            num_jogadores = max(2, min(5, 4))
-            cores_disponiveis = ["vermelho", "amarelo", "verde", "azul", "cinza"]
-            cores_escolhidas = random.sample(cores_disponiveis, num_jogadores)
-
-            ticket_to_ride = Jogo(cores_escolhidas, screen.get_width(), screen.get_height())
             rodando = False
-            ticket_to_ride.game_loop()
+            # Import feio para não ter import circular
+            from SelectionScreen import SelectionScreen
+            print(height, width)
+            SelectionScreen(height, width)
+            
 
         if Utils.button(screen, "Configurar", 20, pygame.Rect(screen.get_width()//2 - 150, 250, 300, 50), settings.BUTTON_COLOR, settings.BUTTON_ACTIVE_COLOR) and mouse_state == [0,1]:
             size = settingsScreen(screen)
-            window_Size = size
+            height, width = size
             if fullscreen:
                 screen = pygame.display.set_mode(size, pygame.FULLSCREEN)
             else:
@@ -70,4 +70,3 @@ def menuPrincipal():
     pygame.quit()
     sys.exit()
 
-menuPrincipal()

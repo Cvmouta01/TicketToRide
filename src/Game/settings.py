@@ -1,7 +1,7 @@
 import json
 import pygame
 
-cores = {"vermelho": (255, 51, 51), "amarelo": (255, 255, 51), "azul": (102, 178, 255), "verde": (102, 255, 102), "cinza": (192, 192, 192)}
+cores = {"vermelho": (255, 51, 51), "amarelo": (255, 255, 51), "azul": (102, 178, 255), "verde": (102, 255, 102), "cinza": (192, 192, 192), "roxo": (153, 51, 255), "rosa": (255, 102, 255)}
 
 window_sizes = [
     (800, 600),
