@@ -19,7 +19,7 @@ class Jogo():
         self.width = width
         self.height = height
         self.baralho_trem = CartaTrem.criar_baralho_trem()
-        self.baralho_objetivo = CartaObjetivo.criar_baralho_objetivo()
+        self.baralho_objetivo = CartaObjetivo.criar_baralho_objetivo(self.width, self.height)
         random.shuffle(self.baralho_trem)
         random.shuffle(self.baralho_objetivo)
         self.cartas_compradas_esse_turno = 0
@@ -153,7 +153,19 @@ class Jogo():
                         else:
                             pygame.draw.polygon(display, (0, 255, 0), data['train_pos'][poligono], 2) # pode remover dps
 
-            # INTERAÇÕES COM CARTAS ====================================================
+            # INTERAÇÕES COM CARTAS DE DESTINO ==================================================
+            # Ideia: Ao clicar nos bilhetes de destino, serão exibidos 3 para o usuário
+            # O usuário pode escolher ficar com 1-3 bilhetes. O restante vai para o fim do baralho
+            if mouse_clicado:
+                if mapa.destino_rect.collidepoint(mouse_pos):
+                    print("Clicou no baralho de destinos!")
+
+                    self.comprando_destinos(display)
+
+                    self.passar_turno() # após comprar bilhetes de destino, passa o turno
+
+
+            # INTERAÇÕES COM CARTAS DE VAGÃO ====================================================
             if mouse_clicado:
                 jogador_atual = self.jogadores[self.jogador_atual_index]
                 clicou_em_compra = False
@@ -249,6 +261,71 @@ class Jogo():
             pygame.display.update()
 
 
+    def comprando_destinos(self, display):
+        comprando = True
+
+        bilhetes = [self.baralho_objetivo.pop(0) for _ in range(3)] # Compra 3 bilhetes de destino
+
+        w_bi = bilhetes[0].imagem.get_width()
+        h_bi = bilhetes[0].imagem.get_height()
+
+        bilhetes_comprados = 0
+        while comprando:
+            mouse_pos = pygame.mouse.get_pos()
+
+            # Barra lateral de compra de bilhetes
+            pygame.draw.rect(display, (255, 255, 255), (0, 0, w_bi + 20, self.height))
+
+            # Desenhando os bilhetes
+            for i, bilhete in enumerate(bilhetes):
+                # Poligono do bilhete
+                poligono_bilhete = [(10, 50 + h_bi * i + 20 * i), # sup esq
+                                    (10 + w_bi, 50 + h_bi * i + 20 * i), # sup dir
+                                    (10 + w_bi, 50 + h_bi * i + 20 * i + h_bi), # inf dir
+                                    (10, 50 + h_bi * i + 20 * i + h_bi)] #inf esq
+
+                if dentro_poligono(mouse_pos, poligono_bilhete):
+                    # Desenhando a borda onhover
+                    pygame.draw.rect(display, (0, 0, 0), (5, 50 + h_bi * i + 20 * i - 5, w_bi + 10, h_bi + 10))
+
+                    if mouse_clicado:
+                        # Se clicou o mouse, compra o bilhete de destino
+                        self.jogadores[self.jogador_atual_index].objetivos.append(bilhete)
+
+                        bilhetes.remove(bilhete)
+
+                        bilhetes_comprados += 1
+
+                display.blit(bilhete.imagem, (10, 50 + h_bi * i + 20 * i))
+
+
+            # Botão de sair
+            if button(display, "Concluído", 20, pygame.Rect((w_bi+20)//2 - 50, 50 + h_bi * 2 + 20 * 2 + h_bi + 25, 100, 50), (200, 0, 0), (255, 0, 0)):
+                if bilhetes_comprados != 0: # Tem que ter comprado ao menos um bilhete
+                    # Devolve os bilhetes restantes ao baralho
+                    for bilhete in bilhetes:
+                        self.baralho_objetivo.append(bilhete)
+
+                    comprando = False
+
+                else:
+                    print("Você deve comprar ao menos um bilhete!")
+
+            pygame.display.update()
+
+
+            # Eventos
+            mouse_clicado = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        mouse_clicado = True
+                
+            
 
 def salvar_jogo(jogo):
     root = Tk()

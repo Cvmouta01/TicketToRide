@@ -38,6 +38,7 @@ class Mapa():
         self.fundo_destino = pygame.image.load(BASE_DIR + "./assets/Images/Fundos/fundo_destino.png")
         self.fundo_destino = resize_com_escala(self.fundo_destino, width, height, 0.12, 0.12)
         self.fundo_destino = pygame.transform.rotate(self.fundo_destino, 90)
+        self.destino_rect = self.fundo_destino.get_rect()
 
         # Carregando as imagens dos trens, na horizontal e na vertical
         self.img_cartas_trem_horizontal = {}
@@ -201,7 +202,11 @@ class Mapa():
 
         # Desenha baralhos destino e vagão (igual antes)
         surface.blit(self.fundo_destino, (surface.get_width() - self.fundo_destino.get_width() - 10, 0 - self.fundo_destino.get_height()//2))
+        # Atualizando o rect do baralho de destinos
+        self.destino_rect[0], self.destino_rect[1] = surface.get_width() - self.fundo_destino.get_width() - 10, 0 - self.fundo_destino.get_height()//2
+
         surface.blit(self.fundo_vagao, (surface.get_width() - self.fundo_vagao.get_width()*0.8, surface.get_height() - self.fundo_vagao.get_height() - 10))
+
         # Desenhando os trilhos pitandos (conquistados)
         for track in self.trilhos_conquistados:
             pygame.draw.polygon(surface, cores[track[4]], track[:4])
