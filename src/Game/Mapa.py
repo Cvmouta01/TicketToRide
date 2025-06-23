@@ -253,7 +253,9 @@ class Mapa():
 
         # Bilhetes de destino
         if self.barra_objetivos_ativa:
-            self.desenhar_bilhetes_destino(surface, jogador.objetivos, mouse_info)
+            for jogador in jogadores:
+                if jogador.ativo:
+                    self.desenhar_bilhetes_destino(surface, jogador.objetivos, mouse_info)
 
     # Retorna um card de jogador, contendo um fundo, um avatar na cor correta
     # Qtd de trens e pontos tem que vir da classe jogador!
