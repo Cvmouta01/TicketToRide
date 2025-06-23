@@ -164,6 +164,11 @@ class Jogo():
 
                     self.passar_turno() # após comprar bilhetes de destino, passa o turno
 
+            # Desenhando um dos bilhetes de destino que abre a lista
+            if button(display, f"Objetivos: {len(self.jogadores[self.jogador_atual_index].objetivos)}", 20, pygame.Rect(10, display.get_height()-10-50, 150, 50), (0, 150, 0), (0, 255, 0)):
+                if mouse_clicado:
+                    mapa.barra_objetivos_ativa = not mapa.barra_objetivos_ativa
+
 
             # INTERAÇÕES COM CARTAS DE VAGÃO ====================================================
             if mouse_clicado:

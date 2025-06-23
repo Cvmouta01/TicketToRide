@@ -61,6 +61,9 @@ class Mapa():
 
         self.grafo_cidades = None
         self.trilhos_conquistados = []
+
+        self.barra_objetivos_ativa = False
+
     # Recebe uma superficie e a lista de jogadores
     # Desenha o mapa e os cards de jogadores com suas respectivas informações
     # Tem que desenhar os baralhos, cartas abertas, mão do jogador ativo e cartas de destino do jogador ativo
@@ -144,6 +147,20 @@ class Mapa():
                 surface.blit(texto, texto_rect)
 
 
+    def desenhar_bilhetes_destino(self, surface, bilhetes, mouse_info):
+        
+
+        if len(bilhetes) == 0: # N pode acontecer, eu acho
+            return
+        
+        w_bi = bilhetes[0].imagem.get_width()
+        h_bi = bilhetes[0].imagem.get_height()
+
+        # Barra lateral dos bilhetes
+        pygame.draw.rect(surface, (255, 255, 255), (0, 0, w_bi + 20, surface.get_height()))
+
+        for i, bilhete in enumerate(bilhetes):
+            surface.blit(bilhete.imagem, (10, 10 + h_bi * i + 10 * i))
 
 
     def desenhar_cartas_laterais(self, surface, cartas_laterais, mouse_info):
@@ -233,6 +250,10 @@ class Mapa():
         
         # Desenha botão
         surface.blit(self.saveimg,(5, 5))
+
+        # Bilhetes de destino
+        if self.barra_objetivos_ativa:
+            self.desenhar_bilhetes_destino(surface, jogador.objetivos, mouse_info)
 
     # Retorna um card de jogador, contendo um fundo, um avatar na cor correta
     # Qtd de trens e pontos tem que vir da classe jogador!
