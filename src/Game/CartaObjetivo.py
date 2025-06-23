@@ -9,6 +9,7 @@ class CartaObjetivo():
         self.destino = destino
         self.pontos = pontos
         self.imagem = imagem_surface
+        self.concluido = False
 
     @staticmethod
     def criar_baralho_objetivo(sur_width, sur_height):
