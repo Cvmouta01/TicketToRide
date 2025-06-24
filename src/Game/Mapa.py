@@ -147,9 +147,8 @@ class Mapa():
                 surface.blit(texto, texto_rect)
 
 
-    def desenhar_bilhetes_destino(self, surface, bilhetes, mouse_info):
+    def desenhar_bilhetes_destino(self, surface, bilhetes, mouse_info, grafo):
         
-
         if len(bilhetes) == 0: # N pode acontecer, eu acho
             return
         
@@ -160,6 +159,27 @@ class Mapa():
         pygame.draw.rect(surface, (255, 255, 255), (0, 0, w_bi + 20, surface.get_height()))
 
         for i, bilhete in enumerate(bilhetes):
+            # Se tiver hover no bilhete, desenha uma borda no bilhete e da highlight
+            # no grafo nas arestas do bilhete
+            # Poligono do bilhete
+            poligono_bilhete = [(10, 10 + h_bi * i + 10 * i), # sup esq
+                                (10 + w_bi, 10 + h_bi * i + 10 * i), # sup dir
+                                (10 + w_bi, 10 + h_bi * i + 10 * i + h_bi), # inf dir
+                                (10, 10 + h_bi * i + 10 * i + h_bi)] #inf esq
+            
+            if dentro_poligono(mouse_info[0], poligono_bilhete):
+                # borda
+                pygame.draw.rect(surface, (0, 0, 0), (5, 10 + h_bi * i + 10 * i - 5, w_bi + 10, h_bi + 10))
+
+                print(grafo.graph.nodes[bilhete.origem]["pos"])
+
+                # highlight no grafo
+                pygame.draw.circle(surface, (0, 0, 0), grafo.graph.nodes[bilhete.origem]["pos"], 12)
+                pygame.draw.circle(surface, (255, 255, 0), grafo.graph.nodes[bilhete.origem]["pos"], 10)
+
+                pygame.draw.circle(surface, (0, 0, 0), grafo.graph.nodes[bilhete.destino]["pos"], 12)
+                pygame.draw.circle(surface, (255, 255, 0), grafo.graph.nodes[bilhete.destino]["pos"], 10)
+
             surface.blit(bilhete.imagem, (10, 10 + h_bi * i + 10 * i))
 
 
@@ -210,7 +230,7 @@ class Mapa():
                  
 
 
-    def draw(self, surface, jogadores, cartas_trem_abertas, mouse_info):
+    def draw(self, surface, jogadores, cartas_trem_abertas, mouse_info, grafo):
         surface.fill((198, 197, 176))
 
         surface.blit(self.background_img, (0, 0)) # Colando o fundo
@@ -255,7 +275,7 @@ class Mapa():
         if self.barra_objetivos_ativa:
             for jogador in jogadores:
                 if jogador.ativo:
-                    self.desenhar_bilhetes_destino(surface, jogador.objetivos, mouse_info)
+                    self.desenhar_bilhetes_destino(surface, jogador.objetivos, mouse_info, grafo)
 
     # Retorna um card de jogador, contendo um fundo, um avatar na cor correta
     # Qtd de trens e pontos tem que vir da classe jogador!

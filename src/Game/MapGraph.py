@@ -331,6 +331,14 @@ class MapGraph:
             # Atualiza no grafo
             data['train_pos'] = posicoes
 
+    def update_vertices(self, surface, mapa):
+        # Recebe a superficie e o mapa do jogo
+        # Atualiza as coordenadas dos vertices do grafo para as novas coordenadas
+
+        for edge in self.graph.nodes:
+            self.graph.nodes[edge]["pos"] = mapa.ajustar_ponto(surface, [list(self.graph.nodes[edge]["pos"])])[0]
+
+
 
 if __name__ == "__main__":
     # Cria uma instância do grafo

@@ -76,6 +76,7 @@ class Jogo():
         self.map_graph = MapGraph()
         mapa = Mapa(display)
         self.map_graph.update_arestas(display, mapa) # Atualiza as arestas carregadas para as coordenadas novas
+        self.map_graph.update_vertices(display, mapa) # Atualiza os vertices tambem
         mapa.grafo_cidades = self.map_graph.graph
         
         #Carregando audio
@@ -110,7 +111,7 @@ class Jogo():
             # Draw ==================================================================
 
             # Passa pro desenho do mapa o display, os jogadores, as cartas abertas e informações sobre o mouse
-            mapa.draw(display, self.jogadores, self.cartas_trem_abertas, [mouse_pos, mouse_clicado])
+            mapa.draw(display, self.jogadores, self.cartas_trem_abertas, [mouse_pos, mouse_clicado], self.map_graph)
             
             # CONQUISTANDO ROTAS =====================================================
 
