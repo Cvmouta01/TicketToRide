@@ -69,6 +69,13 @@ class Jogador():
         6 trem=> 15
         """
 
+        # Removendo a qtd de trens usadas pra conquistar a rota
+        if self.trens >= rota["length"]:
+            self.trens -= rota["length"]
+        else:
+            print("Quantidade de trens insuficiente!")
+            return False
+
         # Removendo as cartas de mão %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
         # Ideia: passa por todas as cartas de mão e pega N cartas selecionadas da cor da rota onde N é o tamanho da rota.
@@ -76,6 +83,7 @@ class Jogador():
 
         cartas_usadas = []
         qtd_cartas_necessairas = rota["length"] # Pra garantir que não vão ser usadas mais cartas que o necessário
+
 
         # Itera por todas as cartas da cor da rota
         for carta in self.cartas:
@@ -130,8 +138,7 @@ class Jogador():
             case _:
                 self.pontos += 15
 
-        # Removendo a qtd de trens usadas pra conquistar a rota
-        self.trens -= rota["length"]
+        return True
 
     def comprar_cartas_trem(self):
         pass

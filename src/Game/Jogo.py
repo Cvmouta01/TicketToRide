@@ -41,6 +41,12 @@ class Jogo():
         self.jogadores[0].ativo = True
         self.jogador_atual_index = 0
 
+        self.finalizando_jogo = False
+        self.jogador_fim = -1
+        self.termino_jogo = False
+
+        self.display = pygame.display.set_mode((self.width, self.height))
+
     def passar_turno(self):
         """
         Passa o turno pro proximo jogador da lista
@@ -50,6 +56,7 @@ class Jogo():
         Jogador amarelo está presente?
         Pra evitar que jogadores locais vejam as cartas uns dos outros
         """
+
         self.jogadores[self.jogador_atual_index].ativo = False
 
         self.jogador_atual_index += 1
@@ -62,7 +69,7 @@ class Jogo():
     def game_loop(self):
         #Iniciando o que não pode ser serializado
         pygame.init()
-        display = pygame.display.set_mode((self.width, self.height))
+        display = self.display
         pygame.display.set_caption("Ticket to Ride")
 
         #Iniciando mapa
@@ -96,6 +103,9 @@ class Jogo():
         mouse_clicado = False
         while True:
             mouse_pos = pygame.mouse.get_pos()
+
+            # Checando pra ver se o jogo acabou
+            self.verif_fim_de_jogo()
 
             # Draw ==================================================================
 
@@ -131,19 +141,21 @@ class Jogo():
                                     conquista_possivel = self.jogadores[self.jogador_atual_index].pode_conquistar(data)
                                     if conquista_possivel != None:
                                         # Conquista de fato a rota
-                                        self.jogadores[self.jogador_atual_index].conquistar_rota(data, conquista_possivel)
+                                        if self.jogadores[self.jogador_atual_index].conquistar_rota(data, conquista_possivel):
+                                            # Seta a rota como owned
+                                            self.map_graph.graph[u][v][key]['owned'] = True
 
-                                        # Seta a rota como owned
-                                        self.map_graph.graph[u][v][key]['owned'] = True
+                                            # Avisa o mapa que tem que pintar o trilho com a cor do jogador
+                                            mapa.atualizar_trens(data['train_pos'], self.jogadores[self.jogador_atual_index].cor)
 
-                                        # Avisa o mapa que tem que pintar o trilho com a cor do jogador
-                                        mapa.atualizar_trens(data['train_pos'], self.jogadores[self.jogador_atual_index].cor)
+                                            print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
 
-                                        print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
+                                            # Verificando fim de jogo
+                                            self.verif_fim_de_jogo()
 
-                                        # Conquistou uma rota, é uma das ações possíveis do turno
-                                        # Então finaliza o turno
-                                        self.passar_turno()
+                                            # Conquistou uma rota, é uma das ações possíveis do turno
+                                            # Então finaliza o turno
+                                            self.passar_turno()
                                     else:
                                         print(f"Não foram selecionadas cartas que sejam suficientes para conquistar a rota {u}-{v}")
                                 else:
@@ -253,13 +265,18 @@ class Jogo():
                     if event.button == 1:
                         mouse_clicado = True
 
-                # avançar turno
                 elif event.type == pygame.KEYDOWN:
+                    # avançar turno
                     if event.key == pygame.K_SPACE:
                         self.passar_turno()
                         self.cartas_compradas_esse_turno = 0
+
                     elif event.key == pygame.K_v:
                         self.map_graph.visualize()
+
+                    # forçando um fim de jogo
+                    elif event.key == pygame.K_o:
+                        self.jogadores[self.jogador_atual_index].trens = 3
 
 
 
@@ -331,6 +348,30 @@ class Jogo():
                         mouse_clicado = True
                 
             
+    def verif_fim_de_jogo(self):
+        print(f"Jogador que finalizou: {self.jogador_fim}")
+        if not self.finalizando_jogo:
+            if self.jogadores[self.jogador_atual_index].trens <= 2:
+                self.finalizando_jogo = True
+
+                self.jogador_fim = self.jogador_atual_index # Esse é quem decretou o fim do jogo
+        else:
+            if self.jogador_atual_index == self.jogador_fim:
+                self.game_over()
+
+    def game_over(self):
+        fim = True
+
+        while fim:
+            pygame.display.update()
+
+            message_to_screen(self.display, "GAME OVER", 40, self.width//2, self.height//2, (255, 0, 0), (0, 0, 0))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+
 
 def salvar_jogo(jogo):
     root = Tk()

@@ -1,2 +1,2 @@
 /src/Game/__pycache__
-.pyc
+*.pyc
