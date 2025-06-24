@@ -359,13 +359,31 @@ class Jogo():
             if self.jogador_atual_index == self.jogador_fim:
                 self.game_over()
 
+    def calcular_vencedor(self):
+        # TODO: calcular pontuação de objetivos e de maior rota
+
+
+        # Verificando os pontos e construindo o ranking
+        ranking = {}
+
+        for jogador in self.jogadores:
+            ranking[jogador.cor] = jogador.pontos
+
+        return dict(sorted(ranking.items(), key=lambda item: item[1], reverse=True))
+
+
     def game_over(self):
         fim = True
+
+        ranking = self.calcular_vencedor()
 
         while fim:
             pygame.display.update()
 
-            message_to_screen(self.display, "GAME OVER", 40, self.width//2, self.height//2, (255, 0, 0), (0, 0, 0))
+            message_to_screen(self.display, "GAME OVER", 40, self.width//2, 100, (255, 0, 0), (0, 0, 0))
+
+            for i, (jogador, pontos) in enumerate(ranking.items()):
+                message_to_screen(self.display, f"Jogador {jogador} => {pontos}", 20, self.width//2, 200 + i*50, (255, 0, 0), (0, 0, 0))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
