@@ -45,8 +45,6 @@ class Jogo():
         self.jogador_fim = -1
         self.termino_jogo = False
 
-        self.display = pygame.display.set_mode((self.width, self.height))
-
     def passar_turno(self):
         """
         Passa o turno pro proximo jogador da lista
@@ -69,7 +67,7 @@ class Jogo():
     def game_loop(self):
         #Iniciando o que não pode ser serializado
         pygame.init()
-        display = self.display
+        display = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Ticket to Ride")
 
         #Iniciando mapa
@@ -106,7 +104,7 @@ class Jogo():
             mouse_pos = pygame.mouse.get_pos()
 
             # Checando pra ver se o jogo acabou
-            self.verif_fim_de_jogo()
+            self.verif_fim_de_jogo(display)
 
             # Draw ==================================================================
 
@@ -152,7 +150,7 @@ class Jogo():
                                             print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
 
                                             # Verificando fim de jogo
-                                            self.verif_fim_de_jogo()
+                                            self.verif_fim_de_jogo(display)
 
                                             # Conquistou uma rota, é uma das ações possíveis do turno
                                             # Então finaliza o turno
@@ -349,7 +347,7 @@ class Jogo():
                         mouse_clicado = True
                 
             
-    def verif_fim_de_jogo(self):
+    def verif_fim_de_jogo(self, display):
         print(f"Jogador que finalizou: {self.jogador_fim}")
         if not self.finalizando_jogo:
             if self.jogadores[self.jogador_atual_index].trens <= 2:
@@ -358,7 +356,7 @@ class Jogo():
                 self.jogador_fim = self.jogador_atual_index # Esse é quem decretou o fim do jogo
         else:
             if self.jogador_atual_index == self.jogador_fim:
-                self.game_over()
+                self.game_over(display)
 
     def calcular_vencedor(self):
         # TODO: calcular pontuação de objetivos e de maior rota
@@ -373,7 +371,7 @@ class Jogo():
         return dict(sorted(ranking.items(), key=lambda item: item[1], reverse=True))
 
 
-    def game_over(self):
+    def game_over(self, display):
         fim = True
 
         ranking = self.calcular_vencedor()
@@ -381,10 +379,10 @@ class Jogo():
         while fim:
             pygame.display.update()
 
-            message_to_screen(self.display, "GAME OVER", 40, self.width//2, 100, (255, 0, 0), (0, 0, 0))
+            message_to_screen(display, "GAME OVER", 40, self.width//2, 100, (255, 0, 0), (0, 0, 0))
 
             for i, (jogador, pontos) in enumerate(ranking.items()):
-                message_to_screen(self.display, f"Jogador {jogador} => {pontos}", 20, self.width//2, 200 + i*50, (255, 0, 0), (0, 0, 0))
+                message_to_screen(display, f"Jogador {jogador} => {pontos}", 20, self.width//2, 200 + i*50, (255, 0, 0), (0, 0, 0))
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
