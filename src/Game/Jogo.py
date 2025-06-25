@@ -149,6 +149,10 @@ class Jogo():
 
                                             print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
 
+                                            # Marca rota no mapa do jogador
+                                            self.jogadores[self.jogador_atual_index].mapa_conquistado.adicionar_rota(u, v, data['length'])
+                                            print(self.jogadores[self.jogador_atual_index].mapa_conquistado.grafo.edges(data=True))
+
                                             # Verificando fim de jogo
                                             self.verif_fim_de_jogo(display)
 
@@ -348,13 +352,13 @@ class Jogo():
                 
             
     def verif_fim_de_jogo(self, display):
-        print(f"Jogador que finalizou: {self.jogador_fim}")
         if not self.finalizando_jogo:
             if self.jogadores[self.jogador_atual_index].trens <= 2:
                 self.finalizando_jogo = True
 
                 self.jogador_fim = self.jogador_atual_index # Esse é quem decretou o fim do jogo
         else:
+            print(f"Jogador que finalizou: {self.jogador_fim}")
             if self.jogador_atual_index == self.jogador_fim:
                 self.game_over(display)
 
