@@ -38,6 +38,7 @@ class Mapa():
         self.fundo_destino = pygame.image.load(BASE_DIR + "./assets/Images/Fundos/fundo_destino.png")
         self.fundo_destino = resize_com_escala(self.fundo_destino, width, height, 0.12, 0.12)
         self.fundo_destino = pygame.transform.rotate(self.fundo_destino, 90)
+        self.destino_rect = self.fundo_destino.get_rect()
 
         # Carregando as imagens dos trens, na horizontal e na vertical
         self.img_cartas_trem_horizontal = {}
@@ -60,6 +61,9 @@ class Mapa():
 
         self.grafo_cidades = None
         self.trilhos_conquistados = []
+
+        self.barra_objetivos_ativa = False
+
     # Recebe uma superficie e a lista de jogadores
     # Desenha o mapa e os cards de jogadores com suas respectivas informações
     # Tem que desenhar os baralhos, cartas abertas, mão do jogador ativo e cartas de destino do jogador ativo
@@ -143,6 +147,40 @@ class Mapa():
                 surface.blit(texto, texto_rect)
 
 
+    def desenhar_bilhetes_destino(self, surface, bilhetes, mouse_info, grafo):
+        
+        if len(bilhetes) == 0: # N pode acontecer, eu acho
+            return
+        
+        w_bi = bilhetes[0].imagem.get_width()
+        h_bi = bilhetes[0].imagem.get_height()
+
+        # Barra lateral dos bilhetes
+        pygame.draw.rect(surface, (255, 255, 255), (0, 0, w_bi + 20, surface.get_height()))
+
+        for i, bilhete in enumerate(bilhetes):
+            # Se tiver hover no bilhete, desenha uma borda no bilhete e da highlight
+            # no grafo nas arestas do bilhete
+            # Poligono do bilhete
+            poligono_bilhete = [(10, 10 + h_bi * i + 10 * i), # sup esq
+                                (10 + w_bi, 10 + h_bi * i + 10 * i), # sup dir
+                                (10 + w_bi, 10 + h_bi * i + 10 * i + h_bi), # inf dir
+                                (10, 10 + h_bi * i + 10 * i + h_bi)] #inf esq
+            
+            if dentro_poligono(mouse_info[0], poligono_bilhete):
+                # borda
+                pygame.draw.rect(surface, (0, 0, 0), (5, 10 + h_bi * i + 10 * i - 5, w_bi + 10, h_bi + 10))
+
+                print(grafo.graph.nodes[bilhete.origem]["pos"])
+
+                # highlight no grafo
+                pygame.draw.circle(surface, (0, 0, 0), grafo.graph.nodes[bilhete.origem]["pos"], 12)
+                pygame.draw.circle(surface, (255, 255, 0), grafo.graph.nodes[bilhete.origem]["pos"], 10)
+
+                pygame.draw.circle(surface, (0, 0, 0), grafo.graph.nodes[bilhete.destino]["pos"], 12)
+                pygame.draw.circle(surface, (255, 255, 0), grafo.graph.nodes[bilhete.destino]["pos"], 10)
+
+            surface.blit(bilhete.imagem, (10, 10 + h_bi * i + 10 * i))
 
 
     def desenhar_cartas_laterais(self, surface, cartas_laterais, mouse_info):
@@ -192,7 +230,7 @@ class Mapa():
                  
 
 
-    def draw(self, surface, jogadores, cartas_trem_abertas, mouse_info):
+    def draw(self, surface, jogadores, cartas_trem_abertas, mouse_info, grafo):
         surface.fill((198, 197, 176))
 
         surface.blit(self.background_img, (0, 0)) # Colando o fundo
@@ -201,7 +239,11 @@ class Mapa():
 
         # Desenha baralhos destino e vagão (igual antes)
         surface.blit(self.fundo_destino, (surface.get_width() - self.fundo_destino.get_width() - 10, 0 - self.fundo_destino.get_height()//2))
+        # Atualizando o rect do baralho de destinos
+        self.destino_rect[0], self.destino_rect[1] = surface.get_width() - self.fundo_destino.get_width() - 10, 0 - self.fundo_destino.get_height()//2
+
         surface.blit(self.fundo_vagao, (surface.get_width() - self.fundo_vagao.get_width()*0.8, surface.get_height() - self.fundo_vagao.get_height() - 10))
+
         # Desenhando os trilhos pitandos (conquistados)
         for track in self.trilhos_conquistados:
             pygame.draw.polygon(surface, cores[track[4]], track[:4])
@@ -228,6 +270,12 @@ class Mapa():
         
         # Desenha botão
         surface.blit(self.saveimg,(5, 5))
+
+        # Bilhetes de destino
+        if self.barra_objetivos_ativa:
+            for jogador in jogadores:
+                if jogador.ativo:
+                    self.desenhar_bilhetes_destino(surface, jogador.objetivos, mouse_info, grafo)
 
     # Retorna um card de jogador, contendo um fundo, um avatar na cor correta
     # Qtd de trens e pontos tem que vir da classe jogador!

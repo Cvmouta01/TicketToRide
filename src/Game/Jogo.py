@@ -19,7 +19,7 @@ class Jogo():
         self.width = width
         self.height = height
         self.baralho_trem = CartaTrem.criar_baralho_trem()
-        self.baralho_objetivo = CartaObjetivo.criar_baralho_objetivo()
+        self.baralho_objetivo = CartaObjetivo.criar_baralho_objetivo(self.width, self.height)
         random.shuffle(self.baralho_trem)
         random.shuffle(self.baralho_objetivo)
         self.cartas_compradas_esse_turno = 0
@@ -41,6 +41,12 @@ class Jogo():
         self.jogadores[0].ativo = True
         self.jogador_atual_index = 0
 
+        self.finalizando_jogo = False
+        self.jogador_fim = -1
+        self.termino_jogo = False
+
+        self.display = pygame.display.set_mode((self.width, self.height))
+
     def passar_turno(self):
         """
         Passa o turno pro proximo jogador da lista
@@ -50,6 +56,7 @@ class Jogo():
         Jogador amarelo está presente?
         Pra evitar que jogadores locais vejam as cartas uns dos outros
         """
+
         self.jogadores[self.jogador_atual_index].ativo = False
 
         self.jogador_atual_index += 1
@@ -62,13 +69,14 @@ class Jogo():
     def game_loop(self):
         #Iniciando o que não pode ser serializado
         pygame.init()
-        display = pygame.display.set_mode((self.width, self.height))
+        display = self.display
         pygame.display.set_caption("Ticket to Ride")
 
         #Iniciando mapa
         self.map_graph = MapGraph()
         mapa = Mapa(display)
         self.map_graph.update_arestas(display, mapa) # Atualiza as arestas carregadas para as coordenadas novas
+        self.map_graph.update_vertices(display, mapa) # Atualiza os vertices tambem
         mapa.grafo_cidades = self.map_graph.graph
         
         #Carregando audio
@@ -97,10 +105,13 @@ class Jogo():
         while True:
             mouse_pos = pygame.mouse.get_pos()
 
+            # Checando pra ver se o jogo acabou
+            self.verif_fim_de_jogo()
+
             # Draw ==================================================================
 
             # Passa pro desenho do mapa o display, os jogadores, as cartas abertas e informações sobre o mouse
-            mapa.draw(display, self.jogadores, self.cartas_trem_abertas, [mouse_pos, mouse_clicado])
+            mapa.draw(display, self.jogadores, self.cartas_trem_abertas, [mouse_pos, mouse_clicado], self.map_graph)
             
             # CONQUISTANDO ROTAS =====================================================
 
@@ -131,19 +142,21 @@ class Jogo():
                                     conquista_possivel = self.jogadores[self.jogador_atual_index].pode_conquistar(data)
                                     if conquista_possivel != None:
                                         # Conquista de fato a rota
-                                        self.jogadores[self.jogador_atual_index].conquistar_rota(data, conquista_possivel)
+                                        if self.jogadores[self.jogador_atual_index].conquistar_rota(data, conquista_possivel):
+                                            # Seta a rota como owned
+                                            self.map_graph.graph[u][v][key]['owned'] = True
 
-                                        # Seta a rota como owned
-                                        self.map_graph.graph[u][v][key]['owned'] = True
+                                            # Avisa o mapa que tem que pintar o trilho com a cor do jogador
+                                            mapa.atualizar_trens(data['train_pos'], self.jogadores[self.jogador_atual_index].cor)
 
-                                        # Avisa o mapa que tem que pintar o trilho com a cor do jogador
-                                        mapa.atualizar_trens(data['train_pos'], self.jogadores[self.jogador_atual_index].cor)
+                                            print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
 
-                                        print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
+                                            # Verificando fim de jogo
+                                            self.verif_fim_de_jogo()
 
-                                        # Conquistou uma rota, é uma das ações possíveis do turno
-                                        # Então finaliza o turno
-                                        self.passar_turno()
+                                            # Conquistou uma rota, é uma das ações possíveis do turno
+                                            # Então finaliza o turno
+                                            self.passar_turno()
                                     else:
                                         print(f"Não foram selecionadas cartas que sejam suficientes para conquistar a rota {u}-{v}")
                                 else:
@@ -153,7 +166,24 @@ class Jogo():
                         else:
                             pygame.draw.polygon(display, (0, 255, 0), data['train_pos'][poligono], 2) # pode remover dps
 
-            # INTERAÇÕES COM CARTAS ====================================================
+            # INTERAÇÕES COM CARTAS DE DESTINO ==================================================
+            # Ideia: Ao clicar nos bilhetes de destino, serão exibidos 3 para o usuário
+            # O usuário pode escolher ficar com 1-3 bilhetes. O restante vai para o fim do baralho
+            if mouse_clicado:
+                if mapa.destino_rect.collidepoint(mouse_pos):
+                    print("Clicou no baralho de destinos!")
+
+                    self.comprando_destinos(display)
+
+                    self.passar_turno() # após comprar bilhetes de destino, passa o turno
+
+            # Desenhando um dos bilhetes de destino que abre a lista
+            if button(display, f"Objetivos: {len(self.jogadores[self.jogador_atual_index].objetivos)}", 20, pygame.Rect(10, display.get_height()-10-70, 150, 50), (0, 150, 0), (0, 255, 0)):
+                if mouse_clicado:
+                    mapa.barra_objetivos_ativa = not mapa.barra_objetivos_ativa
+
+
+            # INTERAÇÕES COM CARTAS DE VAGÃO ====================================================
             if mouse_clicado:
                 jogador_atual = self.jogadores[self.jogador_atual_index]
                 clicou_em_compra = False
@@ -236,18 +266,130 @@ class Jogo():
                     if event.button == 1:
                         mouse_clicado = True
 
-                # avançar turno
                 elif event.type == pygame.KEYDOWN:
+                    # avançar turno
                     if event.key == pygame.K_SPACE:
                         self.passar_turno()
                         self.cartas_compradas_esse_turno = 0
+
                     elif event.key == pygame.K_v:
                         self.map_graph.visualize()
+
+                    # forçando um fim de jogo
+                    elif event.key == pygame.K_o:
+                        self.jogadores[self.jogador_atual_index].trens = 3
 
 
 
             pygame.display.update()
 
+
+    def comprando_destinos(self, display):
+        comprando = True
+
+        bilhetes = [self.baralho_objetivo.pop(0) for _ in range(3)] # Compra 3 bilhetes de destino
+
+        w_bi = bilhetes[0].imagem.get_width()
+        h_bi = bilhetes[0].imagem.get_height()
+
+        bilhetes_comprados = 0
+        while comprando:
+            mouse_pos = pygame.mouse.get_pos()
+
+            # Barra lateral de compra de bilhetes
+            pygame.draw.rect(display, (255, 255, 255), (0, 0, w_bi + 20, self.height))
+
+            # Desenhando os bilhetes
+            for i, bilhete in enumerate(bilhetes):
+                # Poligono do bilhete
+                poligono_bilhete = [(10, 50 + h_bi * i + 20 * i), # sup esq
+                                    (10 + w_bi, 50 + h_bi * i + 20 * i), # sup dir
+                                    (10 + w_bi, 50 + h_bi * i + 20 * i + h_bi), # inf dir
+                                    (10, 50 + h_bi * i + 20 * i + h_bi)] #inf esq
+
+                if dentro_poligono(mouse_pos, poligono_bilhete):
+                    # Desenhando a borda onhover
+                    pygame.draw.rect(display, (0, 0, 0), (5, 50 + h_bi * i + 20 * i - 5, w_bi + 10, h_bi + 10))
+
+                    if mouse_clicado:
+                        # Se clicou o mouse, compra o bilhete de destino
+                        self.jogadores[self.jogador_atual_index].objetivos.append(bilhete)
+
+                        bilhetes.remove(bilhete)
+
+                        bilhetes_comprados += 1
+
+                display.blit(bilhete.imagem, (10, 50 + h_bi * i + 20 * i))
+
+
+            # Botão de sair
+            if button(display, "Concluído", 20, pygame.Rect((w_bi+20)//2 - 50, 50 + h_bi * 2 + 20 * 2 + h_bi + 25, 100, 50), (200, 0, 0), (255, 0, 0)):
+                if bilhetes_comprados != 0: # Tem que ter comprado ao menos um bilhete
+                    # Devolve os bilhetes restantes ao baralho
+                    for bilhete in bilhetes:
+                        self.baralho_objetivo.append(bilhete)
+
+                    comprando = False
+
+                else:
+                    print("Você deve comprar ao menos um bilhete!")
+
+            pygame.display.update()
+
+
+            # Eventos
+            mouse_clicado = False
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        mouse_clicado = True
+                
+            
+    def verif_fim_de_jogo(self):
+        print(f"Jogador que finalizou: {self.jogador_fim}")
+        if not self.finalizando_jogo:
+            if self.jogadores[self.jogador_atual_index].trens <= 2:
+                self.finalizando_jogo = True
+
+                self.jogador_fim = self.jogador_atual_index # Esse é quem decretou o fim do jogo
+        else:
+            if self.jogador_atual_index == self.jogador_fim:
+                self.game_over()
+
+    def calcular_vencedor(self):
+        # TODO: calcular pontuação de objetivos e de maior rota
+
+
+        # Verificando os pontos e construindo o ranking
+        ranking = {}
+
+        for jogador in self.jogadores:
+            ranking[jogador.cor] = jogador.pontos
+
+        return dict(sorted(ranking.items(), key=lambda item: item[1], reverse=True))
+
+
+    def game_over(self):
+        fim = True
+
+        ranking = self.calcular_vencedor()
+
+        while fim:
+            pygame.display.update()
+
+            message_to_screen(self.display, "GAME OVER", 40, self.width//2, 100, (255, 0, 0), (0, 0, 0))
+
+            for i, (jogador, pontos) in enumerate(ranking.items()):
+                message_to_screen(self.display, f"Jogador {jogador} => {pontos}", 20, self.width//2, 200 + i*50, (255, 0, 0), (0, 0, 0))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
 
 
 def salvar_jogo(jogo):
