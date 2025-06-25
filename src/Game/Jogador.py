@@ -1,4 +1,5 @@
 import pygame
+from PlayerGraph import PlayerGraph
 
 class Jogador():
     def __init__(self, cor):
@@ -12,7 +13,7 @@ class Jogador():
 
         self.objetivos = []
 
-        self.mapa_conquistado = None
+        self.mapa_conquistado = PlayerGraph()
 
         # Define se é o turno do jogador ou não
         self.ativo = False
