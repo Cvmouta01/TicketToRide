@@ -151,7 +151,6 @@ class Jogo():
 
                                             # Marca rota no mapa do jogador
                                             self.jogadores[self.jogador_atual_index].mapa_conquistado.adicionar_rota(u, v, data['length'])
-                                            print(self.jogadores[self.jogador_atual_index].mapa_conquistado.grafo)
                                             print(self.jogadores[self.jogador_atual_index].mapa_conquistado.grafo.edges(data=True))
 
                                             # Verificando fim de jogo
