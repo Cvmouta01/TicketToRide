@@ -153,6 +153,11 @@ class Jogo():
                                             self.jogadores[self.jogador_atual_index].mapa_conquistado.adicionar_rota(u, v, data['length'])
                                             print(self.jogadores[self.jogador_atual_index].mapa_conquistado.grafo.edges(data=True))
 
+                                            # Verificando se concluiu algum objetivo
+                                            for destino in self.jogadores[self.jogador_atual_index].objetivos:
+                                                if self.jogadores[self.jogador_atual_index].mapa_conquistado.tem_caminho(destino.origem, destino.destino):
+                                                    destino.concluido = True
+
                                             # Verificando fim de jogo
                                             self.verif_fim_de_jogo(display)
 

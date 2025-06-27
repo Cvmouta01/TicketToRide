@@ -180,6 +180,9 @@ class Mapa():
                 pygame.draw.circle(surface, (0, 0, 0), grafo.graph.nodes[bilhete.destino]["pos"], 12)
                 pygame.draw.circle(surface, (255, 255, 0), grafo.graph.nodes[bilhete.destino]["pos"], 10)
 
+            if bilhete.concluido:
+                pygame.draw.rect(surface, (0, 150, 0), (5, 10 + h_bi * i + 10 * i - 5, w_bi + 10, h_bi + 10))
+
             surface.blit(bilhete.imagem, (10, 10 + h_bi * i + 10 * i))
 
 
