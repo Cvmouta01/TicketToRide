@@ -1,8 +1,11 @@
 import pytest
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src', 'Game')))
 from src.Game.Jogador import Jogador
 from collections import namedtuple
-import sys
-    
+
+   
 def test_primeira_rota_conquista(capsys):
     Rota = namedtuple('Rota', ['color', 'length', 'points'])
     rota = Rota(color='vermelho', length=3, points=3)
