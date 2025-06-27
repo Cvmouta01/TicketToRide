@@ -1,6 +1,4 @@
-import sys
 import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src', 'Game')))
 import pytest
 import pygame
 import src.Game.CartaObjetivo as co_module

@@ -1,45 +1,42 @@
+import os
+import random
+import pygame
+from Utils import resize_com_escala
+
 class CartaObjetivo():
-    def __init__(self, origem, destino, pontos):
-        
+    def __init__(self, origem, destino, pontos, imagem_surface):
         self.origem = origem
-        
         self.destino = destino
-        
         self.pontos = pontos
+        self.imagem = imagem_surface
+        self.concluido = False
 
     @staticmethod
-    def criar_baralho_objetivo():
-        destinos = [
-            ("Boston", "Miami", 12),
-            ("Calgary", "Phoenix", 13),
-            ("Calgary", "Salt Lake City", 7),
-            ("Chicago", "New Orleans", 7),
-            ("Chicago", "Santa Fe", 9),
-            ("Dallas", "New York", 11),
-            ("Denver", "El Paso", 4),
-            ("Denver", "Pittsburgh", 11),
-            ("Duluth", "El Paso", 10),
-            ("Duluth", "Houston", 8),
-            ("Helena", "Los Angeles", 8),
-            ("Kansas City", "Houston", 5),
-            ("Los Angeles", "Chicago", 16),
-            ("Los Angeles", "Miami", 20),
-            ("Los Angeles", "New York", 21),
-            ("Montréal", "Atlanta", 9),
-            ("Montréal", "New Orleans", 13),
-            ("New York", "Atlanta", 6),
-            ("Portland", "Nashville", 17),
-            ("Portland", "Phoenix", 11),
-            ("San Francisco", "Atlanta", 17),
-            ("Sault St. Marie", "Nashville", 8),
-            ("Sault St. Marie", "Oklahoma City", 9),
-            ("Seattle", "Los Angeles", 9),
-            ("Seattle", "New York", 22),
-            ("Toronto", "Miami", 10),
-            ("Vancouver", "Montréal", 20),
-            ("Vancouver", "Santa Fe", 13),
-            ("Winnipeg", "Houston", 12),
-            ("Winnipeg", "Little Rock", 11)
-        ]
-        baralho = [CartaObjetivo(origem, destino, pontos) for origem, destino, pontos in destinos]
+    def criar_baralho_objetivo(sur_width, sur_height):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        # corrige caminho para apontar à pasta Images/Objetivos dentro de src/Game
+        pasta = os.path.join(base_dir, 'assets', 'Images', 'Objetivos')
+        baralho = []
+
+        for fname in os.listdir(pasta):
+            if not fname.lower().endswith('.png'):
+                continue
+
+            nome, _ = os.path.splitext(fname)
+            partes = nome.split('_')
+            if len(partes) != 3:
+                continue
+
+            origem, destino, pts_str = partes
+            try:
+                pontos = int(pts_str)
+            except ValueError:
+                continue
+
+            caminho_imagem = os.path.join(pasta, fname)
+            imagem_surf = pygame.image.load(caminho_imagem).convert_alpha()
+            imagem_surf = resize_com_escala(imagem_surf, sur_width, sur_height, 0.1, 0.1)
+            baralho.append(CartaObjetivo(origem, destino, pontos, imagem_surf))
+
+        random.shuffle(baralho)
         return baralho
