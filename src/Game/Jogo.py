@@ -358,15 +358,49 @@ class Jogo():
 
                 self.jogador_fim = self.jogador_atual_index # Esse é quem decretou o fim do jogo
         else:
-            print(f"Jogador que finalizou: {self.jogador_fim}")
+            #print(f"Jogador que finalizou: {self.jogador_fim}")
             if self.jogador_atual_index == self.jogador_fim:
                 self.game_over(display)
 
     def calcular_vencedor(self):
-        # TODO: calcular pontuação de objetivos e de maior rota
+        '''
+        Passa por todos os jogadores e calcula:
+        1 - Cartas de destino concluidas
+        2 - Maior caminho
+        3 - Pontos gerais
+
+        Constrói um ranking e retorna um dicionário do tipo
+        {"jogador": pontos, etc} ja ordenado pelos maiores pontos
+        '''
+
+        jogador_maior_cam = []
+        tam_maior_cam = 0
+
+        for jogador in self.jogadores:
+
+            # Pontuando cartas de destino concluidas ou não
+            for destino in jogador.objetivos:
+                if destino.concluido:
+                    jogador.pontos += destino.pontos
+                else:
+                    jogador.pontos -= destino.pontos
+
+            # Pontuando maior caminho
+            tam_cam = jogador.mapa_conquistado.calcular_maior_caminho()['peso']
+
+            if tam_cam > tam_maior_cam: # Se foi um que superou
+                jogador_maior_cam = [] # Limpa a lista de jogadores a serem pontuados
+                tam_maior_cam = tam_cam
+                jogador_maior_cam.append(jogador)
+
+            elif tam_cam == tam_maior_cam: # Se foi igual, o jogo permite empate
+                tam_maior_cam = tam_cam
+                jogador_maior_cam.append(jogador)
+
+        for jogador in jogador_maior_cam: jogador.pontos += 10 # Pontuando os jogadores
 
 
-        # Verificando os pontos e construindo o ranking
+        # Construindo o ranking de jogadores
         ranking = {}
 
         for jogador in self.jogadores:
