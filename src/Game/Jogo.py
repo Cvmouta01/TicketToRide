@@ -64,6 +64,10 @@ class Jogo():
 
         self.jogadores[self.jogador_atual_index].ativo = True
 
+        # Checa se o jogador atual é IA, se for chama seu metodo para escolher uma acao
+        if self.jogadores[self.jogador_atual_index].identificador == False:
+            self.jogadores[self.jogador_atual_index].escolher_acao
+
     def game_loop(self):
         #Iniciando o que não pode ser serializado
         pygame.init()

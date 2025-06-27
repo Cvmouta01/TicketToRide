@@ -18,6 +18,9 @@ class Jogador():
         # Define se é o turno do jogador ou não
         self.ativo = False
 
+        # Atributo binario para identificar se é jogador (True) ou IA (False)
+        self.identificador = True
+
     def pode_conquistar(self, rota):
         """
         Faz a contagem das cartas selecionadas e verifica se
