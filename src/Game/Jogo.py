@@ -9,6 +9,7 @@ from Utils import *
 import os
 import pickle
 from tkinter import Tk, filedialog
+import copy
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -45,6 +46,9 @@ class Jogo():
         self.jogador_fim = -1
         self.termino_jogo = False
 
+        self.map_graph = None
+        
+
     def passar_turno(self):
         """
         Passa o turno pro proximo jogador da lista
@@ -70,13 +74,34 @@ class Jogo():
         display = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Ticket to Ride")
 
-        #Iniciando mapa
-        self.map_graph = MapGraph()
         mapa = Mapa(display)
-        self.map_graph.update_arestas(display, mapa) # Atualiza as arestas carregadas para as coordenadas novas
-        self.map_graph.update_vertices(display, mapa) # Atualiza os vertices tambem
+        #Iniciando mapa, caso o mapa não exista
+        if self.map_graph is None:
+            print("Iniciando novo mapa...")
+            self.map_graph = MapGraph()
+            self.map_graph.update_arestas(display, mapa)
+            self.map_graph.update_vertices(display, mapa)
+        else:
+            # Caso o Mapa já exista (jogo sendo carregado)
+            print("Sincronizando mapa carregado...")
+            self.map_graph.update_arestas(display, mapa)
+            self.map_graph.update_vertices(display, mapa)
+            
+            # Percorre as rotas e atualiza a cor no mapa visual
+            for u, v, key, data in self.map_graph.graph.edges(keys=True, data=True):
+                if data.get('owned'): 
+                    # Encontra o jogador que possui a rota
+                    cor_jogador = None
+                    for jogador in self.jogadores:
+                        if jogador.mapa_conquistado.grafo.has_edge(u, v):
+                           cor_jogador = jogador.cor
+                           break
+                    
+                    if cor_jogador and 'train_pos' in data:
+                        mapa.atualizar_trens(data['train_pos'], cor_jogador)
+
         mapa.grafo_cidades = self.map_graph.graph
-        
+
         #Carregando audio
         pygame.mixer.init()
 
@@ -394,10 +419,28 @@ class Jogo():
                     quit()
 
 
-def salvar_jogo(jogo):
+def salvar_jogo(jogo:Jogo):
     root = Tk()
     root.withdraw()
+    
+    # Copia todos vetores de cartas
+    backups = {
+        'baralho_objetivo': [],
+        'jogadores_objetivos': [[] for _ in jogo.jogadores]
+    }
 
+    # Retira os parametros (pygame.surface) que impedem a serialização
+    for carta in jogo.baralho_objetivo:
+        backups['baralho_objetivo'].append(carta.imagem)
+        carta.imagem = None
+
+
+    for i, jogador in enumerate(jogo.jogadores):
+        for carta in jogador.objetivos:
+            backups['jogadores_objetivos'][i].append(carta.imagem)
+            carta.imagem = None
+    
+    # Salva
     caminho_arquivo = filedialog.asksaveasfilename(
         title="Salvar jogo",
         defaultextension=".pkl",
@@ -413,9 +456,18 @@ def salvar_jogo(jogo):
 
     print(f"Jogo salvo em: {caminho_arquivo}")
 
+    # Retorna os vetores de cartas para a situação inicial
+    for i, carta in enumerate(jogo.baralho_objetivo):
+        carta.imagem = backups['baralho_objetivo'][i]
+
+
+    for i, jogador in enumerate(jogo.jogadores):
+        for j, carta in enumerate(jogador.objetivos):
+            carta.imagem = backups['jogadores_objetivos'][i][j]
+
 def carregar_jogo():
     root = Tk()
-    root.withdraw()  # Oculta a janela principal do Tkinter
+    root.withdraw()
 
     caminho_arquivo = filedialog.askopenfilename(
         title="Selecione um arquivo de jogo salvo",
@@ -428,5 +480,20 @@ def carregar_jogo():
 
     with open(caminho_arquivo, 'rb') as f:
         jogo = pickle.load(f)
-
+    
+    bo = CartaObjetivo.criar_baralho_objetivo(jogo.width, jogo.height)
+    
+    #retorna as surfaces
+    for carta in bo:    
+        for a in jogo.baralho_objetivo:
+            if carta.origem == a.origem and carta.destino == a.destino:
+                a.imagem = carta.imagem
+                
+        for player in jogo.jogadores:
+            for a in player.objetivos:
+                if carta.origem == a.origem and carta.destino == a.destino:
+                    a.imagem = carta.imagem
+                    
+            
     return jogo
+
