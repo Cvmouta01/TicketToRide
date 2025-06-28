@@ -496,10 +496,9 @@ def salvar_jogo(jogo:Jogo):
 
     if not caminho_arquivo:
         print("Salvamento cancelado.")
-        return
-
-    with open(caminho_arquivo, 'wb') as f:
-        pickle.dump(jogo, f)
+    else:
+        with open(caminho_arquivo, 'wb') as f:
+            pickle.dump(jogo, f)
 
     print(f"Jogo salvo em: {caminho_arquivo}")
 
