@@ -9,6 +9,7 @@ from Utils import *
 import os
 import pickle
 from tkinter import Tk, filedialog
+import copy
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -45,7 +46,10 @@ class Jogo():
         self.jogador_fim = -1
         self.termino_jogo = False
 
-    def passar_turno(self):
+        self.map_graph = None
+        
+
+    def passar_turno(self, display):
         """
         Passa o turno pro proximo jogador da lista
         Volta pro começo caso tenha sido o turno do ultimo jogador da lista
@@ -54,6 +58,7 @@ class Jogo():
         Jogador amarelo está presente?
         Pra evitar que jogadores locais vejam as cartas uns dos outros
         """
+        msg_popup(display, "Passando Turno", 32, (0, 0, 0), 1, (150, 0, 0))
 
         self.jogadores[self.jogador_atual_index].ativo = False
 
@@ -78,13 +83,34 @@ class Jogo():
         display = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Ticket to Ride")
 
-        #Iniciando mapa
-        self.map_graph = MapGraph()
         mapa = Mapa(display)
-        self.map_graph.update_arestas(display, mapa) # Atualiza as arestas carregadas para as coordenadas novas
-        self.map_graph.update_vertices(display, mapa) # Atualiza os vertices tambem
+        #Iniciando mapa, caso o mapa não exista
+        if self.map_graph is None:
+            print("Iniciando novo mapa...")
+            self.map_graph = MapGraph()
+            self.map_graph.update_arestas(display, mapa)
+            self.map_graph.update_vertices(display, mapa)
+        else:
+            # Caso o Mapa já exista (jogo sendo carregado)
+            print("Sincronizando mapa carregado...")
+            self.map_graph.update_arestas(display, mapa)
+            self.map_graph.update_vertices(display, mapa)
+            
+            # Percorre as rotas e atualiza a cor no mapa visual
+            for u, v, key, data in self.map_graph.graph.edges(keys=True, data=True):
+                if data.get('owned'): 
+                    # Encontra o jogador que possui a rota
+                    cor_jogador = None
+                    for jogador in self.jogadores:
+                        if jogador.mapa_conquistado.grafo.has_edge(u, v):
+                           cor_jogador = jogador.cor
+                           break
+                    
+                    if cor_jogador and 'train_pos' in data:
+                        mapa.atualizar_trens(data['train_pos'], cor_jogador)
+
         mapa.grafo_cidades = self.map_graph.graph
-        
+
         #Carregando audio
         pygame.mixer.init()
 
@@ -157,20 +183,29 @@ class Jogo():
 
                                             print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
 
+                                            msg_popup(display, "Rota conqusitada!", 32, (0, 0, 0), 1, (0, 150, 0))
+
                                             # Marca rota no mapa do jogador
                                             self.jogadores[self.jogador_atual_index].mapa_conquistado.adicionar_rota(u, v, data['length'])
                                             print(self.jogadores[self.jogador_atual_index].mapa_conquistado.grafo.edges(data=True))
+
+                                            # Verificando se concluiu algum objetivo
+                                            for destino in self.jogadores[self.jogador_atual_index].objetivos:
+                                                if self.jogadores[self.jogador_atual_index].mapa_conquistado.tem_caminho(destino.origem, destino.destino):
+                                                    destino.concluido = True
 
                                             # Verificando fim de jogo
                                             self.verif_fim_de_jogo(display)
 
                                             # Conquistou uma rota, é uma das ações possíveis do turno
                                             # Então finaliza o turno
-                                            self.passar_turno()
+                                            self.passar_turno(display)
                                     else:
                                         print(f"Não foram selecionadas cartas que sejam suficientes para conquistar a rota {u}-{v}")
+                                        msg_popup(display, "Cartas insuficientes!", 32, (0, 0, 0), 1, (150, 0, 0))
                                 else:
                                     print(f"A rota {u}-{v} já está conquistada!")
+                                    msg_popup(display, "A rota já esta conquistada!", 32, (0, 0, 0), 1, (150, 0, 0))
 
                             pygame.draw.polygon(display, (255, 0, 0), data['train_pos'][poligono], 2) # pode remover dps
                         else:
@@ -185,7 +220,7 @@ class Jogo():
 
                     self.comprando_destinos(display)
 
-                    self.passar_turno() # após comprar bilhetes de destino, passa o turno
+                    self.passar_turno(display) # após comprar bilhetes de destino, passa o turno
 
             # Desenhando um dos bilhetes de destino que abre a lista
             if button(display, f"Objetivos: {len(self.jogadores[self.jogador_atual_index].objetivos)}", 20, pygame.Rect(10, display.get_height()-10-70, 150, 50), (0, 150, 0), (0, 255, 0)):
@@ -215,6 +250,7 @@ class Jogo():
                             print("O baralho de trem está vazio.")
                     else:
                         print("Você já comprou 2 cartas neste turno.")
+                        msg_popup(display, "Você já comprou 2 cartas neste turno", 32, (0, 0, 0), 1, (150, 0, 0))
 
                 # Clicou em carta lateral
                 for i, carta in enumerate(self.cartas_trem_abertas):
@@ -260,7 +296,7 @@ class Jogo():
 
                 # Passa o turno se necessário
                 if self.cartas_compradas_esse_turno >= 2:
-                    self.passar_turno()
+                    self.passar_turno(display)
                     self.cartas_compradas_esse_turno = 0
                     self.cartas_abertas_compradas_nesse_turno = 0
 
@@ -279,7 +315,7 @@ class Jogo():
                 elif event.type == pygame.KEYDOWN:
                     # avançar turno
                     if event.key == pygame.K_SPACE:
-                        self.passar_turno()
+                        self.passar_turno(display)
                         self.cartas_compradas_esse_turno = 0
 
                     elif event.key == pygame.K_v:
@@ -343,6 +379,8 @@ class Jogo():
 
                 else:
                     print("Você deve comprar ao menos um bilhete!")
+                    msg_popup(display, "Você deve comprar ao menos um bilhete!", 32, (0, 0, 0), 1, (150, 0, 0))
+                    
 
             pygame.display.update()
 
@@ -372,15 +410,49 @@ class Jogo():
 
                 self.jogador_fim = self.jogador_atual_index # Esse é quem decretou o fim do jogo
         else:
-            print(f"Jogador que finalizou: {self.jogador_fim}")
+            #print(f"Jogador que finalizou: {self.jogador_fim}")
             if self.jogador_atual_index == self.jogador_fim:
                 self.game_over(display)
 
     def calcular_vencedor(self):
-        # TODO: calcular pontuação de objetivos e de maior rota
+        '''
+        Passa por todos os jogadores e calcula:
+        1 - Cartas de destino concluidas
+        2 - Maior caminho
+        3 - Pontos gerais
+
+        Constrói um ranking e retorna um dicionário do tipo
+        {"jogador": pontos, etc} ja ordenado pelos maiores pontos
+        '''
+
+        jogador_maior_cam = []
+        tam_maior_cam = 0
+
+        for jogador in self.jogadores:
+
+            # Pontuando cartas de destino concluidas ou não
+            for destino in jogador.objetivos:
+                if destino.concluido:
+                    jogador.pontos += destino.pontos
+                else:
+                    jogador.pontos -= destino.pontos
+
+            # Pontuando maior caminho
+            tam_cam = jogador.mapa_conquistado.calcular_maior_caminho()['peso']
+
+            if tam_cam > tam_maior_cam: # Se foi um que superou
+                jogador_maior_cam = [] # Limpa a lista de jogadores a serem pontuados
+                tam_maior_cam = tam_cam
+                jogador_maior_cam.append(jogador)
+
+            elif tam_cam == tam_maior_cam: # Se foi igual, o jogo permite empate
+                tam_maior_cam = tam_cam
+                jogador_maior_cam.append(jogador)
+
+        for jogador in jogador_maior_cam: jogador.pontos += 10 # Pontuando os jogadores
 
 
-        # Verificando os pontos e construindo o ranking
+        # Construindo o ranking de jogadores
         ranking = {}
 
         for jogador in self.jogadores:
@@ -408,10 +480,28 @@ class Jogo():
                     quit()
 
 
-def salvar_jogo(jogo):
+def salvar_jogo(jogo:Jogo):
     root = Tk()
     root.withdraw()
+    
+    # Copia todos vetores de cartas
+    backups = {
+        'baralho_objetivo': [],
+        'jogadores_objetivos': [[] for _ in jogo.jogadores]
+    }
 
+    # Retira os parametros (pygame.surface) que impedem a serialização
+    for carta in jogo.baralho_objetivo:
+        backups['baralho_objetivo'].append(carta.imagem)
+        carta.imagem = None
+
+
+    for i, jogador in enumerate(jogo.jogadores):
+        for carta in jogador.objetivos:
+            backups['jogadores_objetivos'][i].append(carta.imagem)
+            carta.imagem = None
+    
+    # Salva
     caminho_arquivo = filedialog.asksaveasfilename(
         title="Salvar jogo",
         defaultextension=".pkl",
@@ -420,16 +510,24 @@ def salvar_jogo(jogo):
 
     if not caminho_arquivo:
         print("Salvamento cancelado.")
-        return
-
-    with open(caminho_arquivo, 'wb') as f:
-        pickle.dump(jogo, f)
+    else:
+        with open(caminho_arquivo, 'wb') as f:
+            pickle.dump(jogo, f)
 
     print(f"Jogo salvo em: {caminho_arquivo}")
 
+    # Retorna os vetores de cartas para a situação inicial
+    for i, carta in enumerate(jogo.baralho_objetivo):
+        carta.imagem = backups['baralho_objetivo'][i]
+
+
+    for i, jogador in enumerate(jogo.jogadores):
+        for j, carta in enumerate(jogador.objetivos):
+            carta.imagem = backups['jogadores_objetivos'][i][j]
+
 def carregar_jogo():
     root = Tk()
-    root.withdraw()  # Oculta a janela principal do Tkinter
+    root.withdraw()
 
     caminho_arquivo = filedialog.askopenfilename(
         title="Selecione um arquivo de jogo salvo",
@@ -442,5 +540,20 @@ def carregar_jogo():
 
     with open(caminho_arquivo, 'rb') as f:
         jogo = pickle.load(f)
-
+    
+    bo = CartaObjetivo.criar_baralho_objetivo(jogo.width, jogo.height)
+    
+    #retorna as surfaces
+    for carta in bo:    
+        for a in jogo.baralho_objetivo:
+            if carta.origem == a.origem and carta.destino == a.destino:
+                a.imagem = carta.imagem
+                
+        for player in jogo.jogadores:
+            for a in player.objetivos:
+                if carta.origem == a.origem and carta.destino == a.destino:
+                    a.imagem = carta.imagem
+                    
+            
     return jogo
+

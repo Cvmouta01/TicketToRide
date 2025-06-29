@@ -1,4 +1,5 @@
 import pygame
+import time
 
 def message_to_screen(surface, text, size, x, y, color, bckg_color=None, returning=False, alignment="center"):
     """
@@ -135,3 +136,17 @@ def dentro_poligono(point, polygon):
                         inside = not inside
         px1, py1 = px2, py2
     return inside
+
+def msg_popup(display, msg, size, color, delay, bckg_color):
+    """
+    Exibe uma mensagem na tela por uma qtd de tempo
+    """
+    
+    start = time.time()
+    while time.time() - start < delay:
+        # Desenhando um background que corta a tela toda na horizontal
+        pygame.draw.rect(display, bckg_color, (0, display.get_height()//2 - 50, display.get_width(), 100))
+
+        message_to_screen(display, msg, size, display.get_width()//2, display.get_height()//2, color)
+
+        pygame.display.update()

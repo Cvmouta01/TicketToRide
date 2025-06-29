@@ -83,8 +83,13 @@ def SelectionScreen(height, width):
         
          # Botão para funcionalidade de carregar jogo anteriormente salvo
         if Utils.button(screen, "Carregar Jogo", 20, pygame.Rect(screen.get_width()//2 - 100 ,screen.get_height()-100,200,75), settings.BUTTON_COLOR, settings.BUTTON_ACTIVE_COLOR) and mouse_state == [0,1]:
-            rodando = False
+            
             jogo = carregar_jogo()
+            if jogo == None:
+                print("Carregamento cancelado, voltando ao menu.")
+                continue 
+
+            rodando = False
             
             # Ajustando dimensões 
             jogo.height = screen.get_height()

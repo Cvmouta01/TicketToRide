@@ -123,3 +123,14 @@ class PlayerGraph:
             "num_vertices": len(caminho_global_maximo),
             "num_arestas": len(caminho_global_maximo) - 1 if caminho_global_maximo else 0
         }
+
+    def tem_caminho(self, origem, destino):
+        '''
+        Recebe duas cidades e retorna True se tiver um
+        caminho que ligue as duas. Retorna False caso contrário
+        '''
+
+        if nx.has_path(self.grafo, origem, destino):
+            return True
+        
+        return False

@@ -40,7 +40,7 @@ class MapGraph:
                             pos_y = float(parts[2].strip())
                             
                             # Adiciona a cidade ao grafo
-                            self.graph.add_node(city_name, pos=(pos_x, pos_y))
+                            self.graph.add_node(city_name, pos_raw=(pos_x, pos_y), pos=(0,0))
                             print(f"Cidade adicionada ao grafo: {city_name} ({pos_x}, {pos_y})")
                         except ValueError:
                             print(f"Erro ao converter coordenadas para a cidade {city_name}")
@@ -76,7 +76,7 @@ class MapGraph:
             return False
         
         # Se ambas as cidades existem, adiciona a rota
-        self.graph.add_edge(city1, city2, color=color, length=length, train_pos=train_pos, owned=False)
+        self.graph.add_edge(city1, city2, color=color, length=length, train_pos_raw=train_pos, train_pos={}, owned=False) 
         print(f"Rota adicionada: {city1} - {city2} (cor: {color}, comprimento: {length})")
         return True
 
@@ -321,22 +321,36 @@ class MapGraph:
         # Atualiza as coordenadas das arestas do grafo para as novas coordenadas
 
         for u, v, k, data in self.graph.edges(data=True, keys=True):
-            # Avalia a string do dicionário
-            posicoes = eval(data['train_pos']) # EVAL (!!!)
+            # Pega a string com as posições cruas do atributo 'train_pos_raw'
+            posicoes_raw_str = data.get('train_pos_raw') 
+
+            if not posicoes_raw_str or not isinstance(posicoes_raw_str, str):
+                continue
+            
+            try:
+                # Avalia a string para obter o dicionário de posições cruas
+                posicoes_raw = eval(posicoes_raw_str) 
+            except Exception as e:
+                print(f"Aviso: Falha ao avaliar train_pos_raw para a rota {u}-{v}: {e}. Pulando.")
+                continue
+            
+            
+            posicoes_ajustadas = {}
 
             # Aplica a função a cada ponto de cada trem
-            for trem in posicoes:
-                posicoes[trem] = mapa.ajustar_ponto(surface, posicoes[trem])
+            for trem, pontos_crus in posicoes_raw.items():
+                posicoes_ajustadas[trem] = mapa.ajustar_ponto(surface, pontos_crus)
 
-            # Atualiza no grafo
-            data['train_pos'] = posicoes
+            # Atualiza o atributo 'train_pos'
+            data['train_pos'] = posicoes_ajustadas
 
     def update_vertices(self, surface, mapa):
         # Recebe a superficie e o mapa do jogo
         # Atualiza as coordenadas dos vertices do grafo para as novas coordenadas
 
-        for edge in self.graph.nodes:
-            self.graph.nodes[edge]["pos"] = mapa.ajustar_ponto(surface, [list(self.graph.nodes[edge]["pos"])])[0]
+        for node_name, data in self.graph.nodes(data=True):
+            raw_pos = data['pos_raw']
+            data['pos'] = mapa.ajustar_ponto(surface, [list(raw_pos)])[0]
 
 
 
