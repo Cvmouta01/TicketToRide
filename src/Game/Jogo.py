@@ -49,7 +49,7 @@ class Jogo():
         self.map_graph = None
         
 
-    def passar_turno(self):
+    def passar_turno(self, display):
         """
         Passa o turno pro proximo jogador da lista
         Volta pro começo caso tenha sido o turno do ultimo jogador da lista
@@ -58,6 +58,7 @@ class Jogo():
         Jogador amarelo está presente?
         Pra evitar que jogadores locais vejam as cartas uns dos outros
         """
+        msg_popup(display, "Passando Turno", 32, (0, 0, 0), 1, (150, 0, 0))
 
         self.jogadores[self.jogador_atual_index].ativo = False
 
@@ -174,6 +175,8 @@ class Jogo():
 
                                             print(f"Rota {u}-{v} conquistada pelo jogador {self.jogadores[self.jogador_atual_index].cor}")
 
+                                            msg_popup(display, "Rota conqusitada!", 32, (0, 0, 0), 1, (0, 150, 0))
+
                                             # Marca rota no mapa do jogador
                                             self.jogadores[self.jogador_atual_index].mapa_conquistado.adicionar_rota(u, v, data['length'])
                                             print(self.jogadores[self.jogador_atual_index].mapa_conquistado.grafo.edges(data=True))
@@ -188,11 +191,13 @@ class Jogo():
 
                                             # Conquistou uma rota, é uma das ações possíveis do turno
                                             # Então finaliza o turno
-                                            self.passar_turno()
+                                            self.passar_turno(display)
                                     else:
                                         print(f"Não foram selecionadas cartas que sejam suficientes para conquistar a rota {u}-{v}")
+                                        msg_popup(display, "Cartas insuficientes!", 32, (0, 0, 0), 1, (150, 0, 0))
                                 else:
                                     print(f"A rota {u}-{v} já está conquistada!")
+                                    msg_popup(display, "A rota já esta conquistada!", 32, (0, 0, 0), 1, (150, 0, 0))
 
                             pygame.draw.polygon(display, (255, 0, 0), data['train_pos'][poligono], 2) # pode remover dps
                         else:
@@ -207,7 +212,7 @@ class Jogo():
 
                     self.comprando_destinos(display)
 
-                    self.passar_turno() # após comprar bilhetes de destino, passa o turno
+                    self.passar_turno(display) # após comprar bilhetes de destino, passa o turno
 
             # Desenhando um dos bilhetes de destino que abre a lista
             if button(display, f"Objetivos: {len(self.jogadores[self.jogador_atual_index].objetivos)}", 20, pygame.Rect(10, display.get_height()-10-70, 150, 50), (0, 150, 0), (0, 255, 0)):
@@ -237,6 +242,7 @@ class Jogo():
                             print("O baralho de trem está vazio.")
                     else:
                         print("Você já comprou 2 cartas neste turno.")
+                        msg_popup(display, "Você já comprou 2 cartas neste turno", 32, (0, 0, 0), 1, (150, 0, 0))
 
                 # Clicou em carta lateral
                 for i, carta in enumerate(self.cartas_trem_abertas):
@@ -282,7 +288,7 @@ class Jogo():
 
                 # Passa o turno se necessário
                 if self.cartas_compradas_esse_turno >= 2:
-                    self.passar_turno()
+                    self.passar_turno(display)
                     self.cartas_compradas_esse_turno = 0
                     self.cartas_abertas_compradas_nesse_turno = 0
 
@@ -301,7 +307,7 @@ class Jogo():
                 elif event.type == pygame.KEYDOWN:
                     # avançar turno
                     if event.key == pygame.K_SPACE:
-                        self.passar_turno()
+                        self.passar_turno(display)
                         self.cartas_compradas_esse_turno = 0
 
                     elif event.key == pygame.K_v:
@@ -365,6 +371,8 @@ class Jogo():
 
                 else:
                     print("Você deve comprar ao menos um bilhete!")
+                    msg_popup(display, "Você deve comprar ao menos um bilhete!", 32, (0, 0, 0), 1, (150, 0, 0))
+                    
 
             pygame.display.update()
 
@@ -488,10 +496,9 @@ def salvar_jogo(jogo:Jogo):
 
     if not caminho_arquivo:
         print("Salvamento cancelado.")
-        return
-
-    with open(caminho_arquivo, 'wb') as f:
-        pickle.dump(jogo, f)
+    else:
+        with open(caminho_arquivo, 'wb') as f:
+            pickle.dump(jogo, f)
 
     print(f"Jogo salvo em: {caminho_arquivo}")
 
