@@ -66,7 +66,11 @@ class Jogo():
 
         # Checa se o jogador atual é IA, se for chama seu metodo para escolher uma acao
         if self.jogadores[self.jogador_atual_index].identificador == False:
-            self.jogadores[self.jogador_atual_index].escolher_acao
+            acao = self.jogadores[self.jogador_atual_index].escolher_acao(self.map_graph.graph)
+            if acao is not None:
+                self.processa_turno_IA(acao)
+            else:
+                self.processa_turno_IA()
 
     def game_loop(self):
         #Iniciando o que não pode ser serializado
@@ -355,6 +359,12 @@ class Jogo():
                         mouse_clicado = True
                 
             
+    def processa_turno_IA(self, rota=None):
+        if rota is not None:
+            pass
+        else:
+            pass
+    
     def verif_fim_de_jogo(self, display):
         if not self.finalizando_jogo:
             if self.jogadores[self.jogador_atual_index].trens <= 2:
