@@ -42,8 +42,7 @@ class TestIntegrationMapPlayerGraphs(unittest.TestCase):
         if len(nodes) >= 2:
             origem = nodes[0]
             destino = nodes[1]
-            # Pode não existir caminho se grafo desconexo, então não é assert obrigatório
-            # Apenas garante que o método funciona
+
             _ = self.player_graph.tem_caminho(origem, destino)
 
 if __name__ == '__main__':
