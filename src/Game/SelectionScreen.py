@@ -18,7 +18,7 @@ def SelectionScreen(height, width):
     mouse_state = [1,1]
     rodando = True
     cores_disponiveis = ["verde", "azul", "cinza", "roxo", "rosa"]
-    slots = {1:"vermelho", 2: "none", 3: "none", 4: "none", 5: "none"}
+    slots = {1:["vermelho", True], 2: "none", 3: "none", 4: "none", 5: "none"}
 
     while rodando:
 
@@ -33,13 +33,13 @@ def SelectionScreen(height, width):
                 rodando = False
         
         # Desenha player 1 obrigatório 
-        pygame.draw.rect(screen,settings.cores[slots[1]],(50, 50, 100, 100),border_radius= 25)
+        pygame.draw.rect(screen,settings.cores[slots[1][0]],(50, 50, 100, 100),border_radius= 25)
         
         # Botão para mudar de cor
         if Utils.button(screen, ">", 20, pygame.Rect(160 ,110 ,40,40), (0,0,0), (255,255,255)) and mouse_state == [0,1]:
-            cores_disponiveis.append(slots[1])
-            slots[1] = cores_disponiveis[0]
-            cores_disponiveis.remove(slots[1])
+            cores_disponiveis.append(slots[1][0])
+            slots[1][0] = cores_disponiveis[0]
+            cores_disponiveis.remove(slots[1][0])
 
         # Verifica e carrega na tela a situação dos slots de jogadores
         for i in range(2,6):
@@ -49,25 +49,25 @@ def SelectionScreen(height, width):
     
                 if Utils.button(screen, "+Player", 20, pygame.Rect(x[i-2] ,y[i-2] ,100,100), (0,150,0), (255,255,255)) and mouse_state == [0,1]:
                     # Atribui uma cor ao player slot
-                    slots[i] = cores_disponiveis[0]
-                    cores_disponiveis.remove(slots[i])
+                    slots[i] = [cores_disponiveis[0], True]
+                    cores_disponiveis.remove(slots[i][0])
                 if Utils.button(screen, "+AI", 20, pygame.Rect(x[i-2]+100 ,y[i-2] ,100,100), (150,0,0), (255,255,255)) and mouse_state == [0,1]:
                     # por enquanto adiciona Player, mudar quando programar AI
                     # slots[i] = "ai"
-                    slots[i] = cores_disponiveis[0]
-                    cores_disponiveis.remove(slots[i])
+                    slots[i] = [cores_disponiveis[0], False]
+                    cores_disponiveis.remove(slots[i][0])
             elif slots != "ai":
-                pygame.draw.rect(screen,settings.cores[slots[i]],(x[i-2], y[i-2], 100, 100),border_radius= 25)
+                pygame.draw.rect(screen,settings.cores[slots[i][0]],(x[i-2], y[i-2], 100, 100),border_radius= 25)
                 
                 # Botão para mudar de cor
                 if Utils.button(screen, ">", 20, pygame.Rect(x[i-2] + 110 ,y[i-2] + 60 , 40, 40), (0,0,0), (255,255,255)) and mouse_state == [0,1]:
-                    cores_disponiveis.append(slots[i])
-                    slots[i] = cores_disponiveis[0]
-                    cores_disponiveis.remove(slots[i])
+                    cores_disponiveis.append(slots[i][0])
+                    slots[i][0] = cores_disponiveis[0]
+                    cores_disponiveis.remove(slots[i][0])
                 
                 # Botão para deletar jogador
                 if Utils.button(screen, "x", 20, pygame.Rect(x[i-2] + 110 ,y[i-2]  , 40, 40), (0,0,0), (255,255,255)) and mouse_state == [0,1]:
-                    cores_disponiveis.append(slots[i])
+                    cores_disponiveis.append(slots[i][0])
                     slots[i] = "none"
                     
 

@@ -10,6 +10,7 @@ import os
 import pickle
 from tkinter import Tk, filedialog
 import copy
+from IA import IA
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -31,8 +32,11 @@ class Jogo():
             self.cartas_trem_abertas.append(self.baralho_trem.pop())
 
         self.jogadores = []
-        for cor in jogadores:
-            jogador = Jogador(cor)
+        for tupla in jogadores:
+            if tupla[1]:
+                jogador = Jogador(tupla[0])
+            else:
+                jogador = IA(tupla[0])
             for _ in range(4):
                 jogador.cartas.append(self.baralho_trem.pop())
             for _ in range(3):
@@ -49,7 +53,7 @@ class Jogo():
         self.map_graph = None
         
 
-    def passar_turno(self, display):
+    def passar_turno(self, display, mapa):
         """
         Passa o turno pro proximo jogador da lista
         Volta pro começo caso tenha sido o turno do ultimo jogador da lista
@@ -68,6 +72,13 @@ class Jogo():
             self.jogador_atual_index = 0
 
         self.jogadores[self.jogador_atual_index].ativo = True
+
+        # Checa se o jogador atual é IA, se for chama seu metodo para escolher uma acao
+        if self.jogadores[self.jogador_atual_index].identificador == False:
+            acao = self.jogadores[self.jogador_atual_index].escolher_acao(self.map_graph.graph)
+            self.processa_turno_IA(acao, display, mapa)
+            
+            
 
     def game_loop(self):
         #Iniciando o que não pode ser serializado
@@ -191,7 +202,7 @@ class Jogo():
 
                                             # Conquistou uma rota, é uma das ações possíveis do turno
                                             # Então finaliza o turno
-                                            self.passar_turno(display)
+                                            self.passar_turno(display,mapa)
                                     else:
                                         print(f"Não foram selecionadas cartas que sejam suficientes para conquistar a rota {u}-{v}")
                                         msg_popup(display, "Cartas insuficientes!", 32, (0, 0, 0), 1, (150, 0, 0))
@@ -212,7 +223,7 @@ class Jogo():
 
                     self.comprando_destinos(display)
 
-                    self.passar_turno(display) # após comprar bilhetes de destino, passa o turno
+                    self.passar_turno(display, mapa) # após comprar bilhetes de destino, passa o turno
 
             # Desenhando um dos bilhetes de destino que abre a lista
             if button(display, f"Objetivos: {len(self.jogadores[self.jogador_atual_index].objetivos)}", 20, pygame.Rect(10, display.get_height()-10-70, 150, 50), (0, 150, 0), (0, 255, 0)):
@@ -288,7 +299,7 @@ class Jogo():
 
                 # Passa o turno se necessário
                 if self.cartas_compradas_esse_turno >= 2:
-                    self.passar_turno(display)
+                    self.passar_turno(display, mapa)
                     self.cartas_compradas_esse_turno = 0
                     self.cartas_abertas_compradas_nesse_turno = 0
 
@@ -307,7 +318,7 @@ class Jogo():
                 elif event.type == pygame.KEYDOWN:
                     # avançar turno
                     if event.key == pygame.K_SPACE:
-                        self.passar_turno(display)
+                        self.passar_turno(display, mapa)
                         self.cartas_compradas_esse_turno = 0
 
                     elif event.key == pygame.K_v:
@@ -389,6 +400,69 @@ class Jogo():
                         mouse_clicado = True
                 
             
+    def processa_turno_IA(self, rota, display, mapa):
+        """
+        Processa a ação decidida pela IA, seja conquistar uma rota ou comprar cartas.
+        Exibe pop-ups na tela para informar o jogador sobre a ação da IA.
+        """
+        jogador_atual = self.jogadores[self.jogador_atual_index]
+        pygame.time.wait(500) # Uma pequena pausa para o turno da IA não ser instantâneo
+
+        # CASO 1: A IA decidiu conquistar uma rota
+        if rota:
+            u, v, key, data = rota
+            print(f"IA ({jogador_atual.cor}) tentando conquistar a rota {u}-{v}...")
+
+            # Usa os métodos existentes do jogador para verificar e conquistar
+            conquista_possivel = jogador_atual.pode_conquistar(data)
+            if conquista_possivel and jogador_atual.conquistar_rota(data, conquista_possivel):
+                
+                # Atualiza o estado do grafo principal
+                self.map_graph.graph[u][v][key]['owned'] = True
+                self.map_graph.graph[u][v][key]['owner_color'] = jogador_atual.cor
+                
+                # pinta rota
+                mapa.atualizar_trens(data['train_pos'], jogador_atual.cor)
+
+                # Exibe a mensagem de sucesso por 3 segundos
+                mensagem = f"IA ({jogador_atual.cor}) conquistou a rota {u}-{v}!"
+                msg_popup(display, mensagem, 32, (255, 255, 255), 3, (0, 100, 0))
+                
+                # A função conquistar_rota já dá os pontos e remove os trens e cartas.
+            else:
+                # Se, por algum motivo, a conquista falhar, a IA compra cartas como plano B.
+                print(f"IA ({jogador_atual.cor}) falhou em conquistar a rota. Comprando cartas.")
+                self.processa_turno_IA(None, display) # Chama a si mesma com a ação de comprar carta
+                return # Retorna para não passar o turno duas vezes
+
+        # CASO 2: A IA decidiu comprar cartas (porque 'rota' é None)
+        else:
+            print(f"IA ({jogador_atual.cor}) vai comprar 2 cartas.")
+            
+            # Primeira compra de carta
+            if self.baralho_trem:
+                carta_comprada = self.baralho_trem.pop()
+                jogador_atual.cartas.append(carta_comprada)
+                # Exibe a mensagem por 3 segundos
+                mensagem = f"IA ({jogador_atual.cor}) comprou uma carta."
+                msg_popup(display, mensagem, 32, (255, 255, 255), 3, (50, 50, 50))
+            else:
+                msg_popup(display, "Baralho de trem vazio!", 32, (255, 255, 255), 3, (150, 0, 0))
+
+            # Segunda compra de carta
+            if self.baralho_trem:
+                carta_comprada = self.baralho_trem.pop()
+                jogador_atual.cartas.append(carta_comprada)
+                # Exibe a segunda mensagem por 3 segundos
+                mensagem = f"IA ({jogador_atual.cor}) comprou outra carta."
+                msg_popup(display, mensagem, 32, (255, 255, 255), 3, (50, 50, 50))
+            else:
+                 msg_popup(display, "Baralho de trem vazio!", 32, (255, 255, 255), 3, (150, 0, 0))
+        
+        # Ao final da ação da IA (conquistar ou comprar), o turno é passado.
+        # A sua função `passar_turno` já lida com a checagem do próximo jogador ser IA.
+        self.passar_turno(display, mapa)
+    
     def verif_fim_de_jogo(self, display):
         if not self.finalizando_jogo:
             if self.jogadores[self.jogador_atual_index].trens <= 2:
