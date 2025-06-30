@@ -1,4 +1,4 @@
-import Jogador
+from Jogador import Jogador
 import random
 from collections import Counter
 
@@ -10,85 +10,60 @@ class IA(Jogador):
 
     #Metodo para IA escolher qual acao tomar.
     def escolher_acao(self, grafo):
-        
-        #Checa se possui cartas, se a lista estiver vazia realiza a compra
-        if self.cartas.empty:
+        """
+        Analisa o estado do jogo e decide a melhor ação a ser tomada.
+        Retorna uma tupla com dados da rota se decidir conquistar, ou None se decidir comprar cartas.
+        """
+        # CORREÇÃO 1: A lógica foi invertida. Se não tiver cartas, deve comprar.
+        if not self.cartas:
             return None
         
-        #Se tiver cartas, conta e tenta conquistar uma rota
+        # Se tiver cartas, tenta encontrar uma rota para conquistar
+        contagem_cores = Counter(carta.cor for carta in self.cartas if carta.cor != "coringa")
+        coringas = sum(1 for carta in self.cartas if carta.cor == "coringa")
+
+        # Se não tiver cartas coloridas, só coringas
+        if not contagem_cores:
+            maior_cor_nome = "coringa"
+            maior_cor_qtd = coringas
         else:
+            maior_cor_nome = contagem_cores.most_common(1)[0][0]
+            maior_cor_qtd = contagem_cores.most_common(1)[0][1]
+
+        # Cria uma lista de possiveis rotas
+        rotas_possiveis = []
+        for u, v, key, data in grafo.edges(data=True, keys=True):
+            # CORREÇÃO 2: A verificação de 'owned' estava sintaticamente incorreta.
+            if not data.get('owned'):
+                # Verifica se a IA pode conquistar a rota com a cor que ela mais tem + coringas
+                if (data.get('color') == maior_cor_nome or data.get('color') == 'cinza') and data.get('length', 0) <= (maior_cor_qtd + coringas):
+                    rotas_possiveis.append((u, v, key, data))
+
+        # Se a lista de rotas possiveis não esta vazia, escolhe um elemento aleatoriamente
+        if rotas_possiveis:
+            rota_escolhida = random.choice(rotas_possiveis)
             
-            #Contagem de cores como em Jogador, mas contando o total inves das selecionadas
-            contagem_cores = {'vermelho' : 0, 'azul' : 0, 'verde' : 0, 'amarelo' : 0, 'preto' : 0, 'branco' : 0, 'laranja' : 0, 'rosa' : 0}
-            coringas = 0
+            # Seleciona as cartas necessárias para a conquista
+            cor_a_usar = maior_cor_nome if rota_escolhida[3]['color'] == 'cinza' else rota_escolhida[3]['color']
             
-            # Passa por todas as cartas
+            cartas_necessarias = rota_escolhida[3]['length']
+            
+            # Marca cartas da cor principal
             for carta in self.cartas:
-                if carta.cor == "coringa":
-                    coringas += 1
-                else:
-                    if carta.cor in contagem_cores:
-                        contagem_cores[carta.cor] += 1
-                    else:
-                        contagem_cores[carta.cor] = 1
-
-            #Checa qual a cor em maior quantidade
-            maior_cor = max(contagem_cores.values())
+                if cartas_necessarias > 0 and carta.cor == cor_a_usar:
+                    carta.selecionada = True
+                    cartas_necessarias -= 1
             
-            #Cria uma lista com todas as cores que possi valor igual a maior_cor, caso houver mais do que uma
-            #Para cada tupla em contagem_cores, adiciona na lista todas com o valor igual maior_cor
-            cores_mais_repetidas = [
-                cor for cor, contagem in contagem_cores.items()
-                if contagem == maior_cor
-            ]
+            # Se ainda faltar, marca coringas
+            if cartas_necessarias > 0:
+                for carta in self.cartas:
+                    if cartas_necessarias > 0 and carta.cor == 'coringa':
+                        carta.selecionada = True
+                        cartas_necessarias -= 1
 
-            #Cria uma lista de possiveis rotas, itera sobre as aresta do grafo e adiciona na lista as rotas possiveis
-            rotas_possiveis = []
-
-            for u, v, data in grafo.edges(data=True):
-                if (data.get('color') in cores_mais_repetidas or data.get('color') == 'cinza') and data.get('length', 0) <= maior_cor and data.get('owned' is False):
-                    rotas_possiveis.append((u, v, data))
-
-
-            #Se a lista de rotas possiveis não esta vazia, escolhe um elemento aleatoriamente e tenta conquiastar
-            if rotas_possiveis:
-                
-                rng = random.randint(0, len(rotas_possiveis)-1)
-                rota_escolhida = rotas_possiveis[rng]
-                
-                #Seleciona as cartas necessaria para conquistar a rota. Contador é indice para selecionar a qtd certa de cartas
-                contador = 0
-                for carta in self.cartas:                    
-                    if contador < rota_escolhida[2]['length']:
-
-                        #Se a rota não for cinza, compara a cor da carta na mão com a cor da rota escolhida
-                        if (rota_escolhida[2]['color'] != 'cinza' and carta.cor == rota_escolhida[2]['color']):
-                            carta.selecionada = True
-                            contador += 1
-                        
-                        #Se a rota for cinza, compara a cor da carta na mão com a cor na lista de mais repetidas
-                        elif(rota_escolhida[2]['color'] == 'cinza' and carta.cor == cores_mais_repetidas[0]):
-                            carta.selecionada = True
-                            contador += 1
-                
-                #Retorna a rota escolhida para o Jogo gerenciar as mudanças no grafo
-                return rota_escolhida
-            
-            #Se lista estiver vazia, compra carta
-            else:
-                return None
+            # Retorna a rota escolhida para o Jogo gerenciar as mudanças no grafo
+            return rota_escolhida
         
-        #Cada valor representa um do metodos da classe Jogador: 1 = conquistar_rota
-        #2 = comprar_carta_trem
-        #3 = comprar_carta_objetivo
-        
-        escolha = random.randint(1, 3) 
-
-        if escolha == 1:
-            pass
-
-        elif escolha == 2:
-            pass
-
-        elif escolha == 3:
-            pass
+        # Se a lista de rotas estiver vazia, decide comprar cartas
+        else:
+            return None
